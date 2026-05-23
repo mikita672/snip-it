@@ -2,10 +2,9 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:snip-it-db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/snip-it-db
+    username: postgres
+    password: postgres
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,4 +12,3 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
