@@ -1,4 +1,4 @@
-package com.snipit.backend.config;
+package com.snipit.backend.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

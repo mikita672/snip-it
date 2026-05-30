@@ -1,4 +1,4 @@
-package com.snipit.backend.config;
+package com.snipit.backend.auth;
 
 import java.util.Date;
 import java.util.HashMap;
