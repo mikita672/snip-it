@@ -26,8 +26,6 @@ public class AuthenticationService {
 
     public AuthenticationResponse register(RegisterRequestDTO request) {
         User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setIsAdmin(false);
