@@ -1,0 +1,60 @@
+package com.snipit.backend.auth;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.snipit.backend.user.User;
+import com.snipit.backend.user.UserRepository;
+
+@Service
+public class AuthenticationService {
+    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+
+    public AuthenticationService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService,
+            AuthenticationManager authenticationManager) {
+        this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
+    }
+
+    public AuthenticationResponse register(RegisterRequestDTO request) {
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setIsAdmin(false);
+        repository.save(user);
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPasswordHash())
+                .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+                .build();
+        var jwt = jwtService.generateToken(userDetails);
+
+        return new AuthenticationResponse(jwt);
+    }
+
+    public AuthenticationResponse authenticate(AuthenticateRequestDTO request) {
+        authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        var user = repository.findByEmail(request.getEmail()).orElseThrow();
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPasswordHash())
+                .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+                .build();
+        var jwt = jwtService.generateToken(userDetails);
+
+        return new AuthenticationResponse(jwt);
+    }
+
+}
