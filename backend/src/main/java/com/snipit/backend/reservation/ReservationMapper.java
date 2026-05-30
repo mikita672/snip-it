@@ -6,7 +6,7 @@ import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.user.User;
 
 public class ReservationMapper {
-    public ReservationResponseDTO ReservationResponseDTO(Reservation r){
+    public ReservationResponseDTO tResponseDTO(Reservation r){
         ReservationResponseDTO dto = new ReservationResponseDTO();
         dto.setId(r.getId());
         dto.setUserId(r.getUser().getId());
