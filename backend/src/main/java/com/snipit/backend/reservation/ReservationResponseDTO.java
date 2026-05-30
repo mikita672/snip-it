@@ -51,6 +51,14 @@ public class ReservationResponseDTO {
         return status;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public void setStatus(String status) {
         this.status = status;
     }
