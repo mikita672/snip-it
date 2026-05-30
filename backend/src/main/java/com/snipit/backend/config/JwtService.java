@@ -51,6 +51,20 @@ public class JwtService {
                 .compact();
     }
 
+    public boolean isTokenValid(String jwt, UserDetails userDetails) {
+        final String username = extractUsername(jwt);
+
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(jwt));
+    }
+
+    private boolean isTokenExpired(String jwt) {
+        return extractExperation(jwt).before(new Date());
+    }
+
+    private Date extractExperation(String jwt) {
+        return extractClaim(jwt, Claims::getExpiration);
+    }
+
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
 
