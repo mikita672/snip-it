@@ -1,10 +1,12 @@
 package com.snipit.backend.reservation;
+import org.springframework.stereotype.Component;
 import java.util.stream.Collectors;
 import java.util.Set;
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.user.User;
 
+@Component
 public class ReservationMapper {
     public ReservationResponseDTO toResponseDTO(Reservation r){
         ReservationResponseDTO dto = new ReservationResponseDTO();
