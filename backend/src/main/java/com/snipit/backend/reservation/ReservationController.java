@@ -1,4 +1,5 @@
 package com.snipit.backend.reservation;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +27,12 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<ReservationResponseDTO> create(@RequestBody ReservationRequestDTO room) {
+    public ResponseEntity<ReservationResponseDTO> create(@RequestBody @Valid ReservationRequestDTO room) {
         return new ResponseEntity<>(reservationService.create(room), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ReservationResponseDTO update(@PathVariable Integer id, @RequestBody ReservationRequestDTO room) {
+    public ReservationResponseDTO update(@PathVariable Integer id, @RequestBody @Valid ReservationRequestDTO room) {
         return reservationService.update(id, room);
     }
 
