@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reservation")
+@RequestMapping("/api/v1/reservation")
 @Tag(name = "Reservation", description = "Reservation management endpoints")
 public class ReservationController {
     private final ReservationService reservationService;
