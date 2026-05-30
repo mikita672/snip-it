@@ -24,7 +24,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthenticationResponse register(RegisterRequestDTO request) {
+    public String register(RegisterRequestDTO request) {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -36,12 +36,10 @@ public class AuthenticationService {
                 .password(user.getPasswordHash())
                 .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
                 .build();
-        var jwt = jwtService.generateToken(userDetails);
-
-        return new AuthenticationResponse(jwt);
+        return jwtService.generateToken(userDetails);
     }
 
-    public AuthenticationResponse authenticate(AuthenticateRequestDTO request) {
+    public String authenticate(AuthenticateRequestDTO request) {
         authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = repository.findByEmail(request.getEmail()).orElseThrow();
@@ -50,9 +48,7 @@ public class AuthenticationService {
                 .password(user.getPasswordHash())
                 .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
                 .build();
-        var jwt = jwtService.generateToken(userDetails);
-
-        return new AuthenticationResponse(jwt);
+        return jwtService.generateToken(userDetails);
     }
 
 }

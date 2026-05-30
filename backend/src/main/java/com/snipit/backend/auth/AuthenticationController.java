@@ -1,5 +1,7 @@
 package com.snipit.backend.auth;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +13,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
+    private static final String JWT_COOKIE_NAME = "access_token";
     private final AuthenticationService service;
 
     public AuthenticationController(AuthenticationService service) {
@@ -19,11 +22,29 @@ public class AuthenticationController {
 
     @PostMapping("/sign-up")
     public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequestDTO request) {
-        return ResponseEntity.ok(service.register(request));
+        String jwt = service.register(request);
+        ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, jwt)
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Strict")
+            .build();
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .body(new AuthenticationResponse());
     }
 
     @PostMapping("/sign-in")
     public ResponseEntity<AuthenticationResponse> authenticate(@Valid @RequestBody AuthenticateRequestDTO request) {
-        return ResponseEntity.ok(service.authenticate(request));
+        String jwt = service.authenticate(request);
+        ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, jwt)
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Strict")
+            .build();
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .body(new AuthenticationResponse());
     }
 }
