@@ -8,23 +8,23 @@ import com.snipit.backend.treatment.Treatment;
 public class ReservationMapper {
 
     public ReservationResponseDTO toResponseDTO(Reservation r) {
-        return new ReservationResponseDTO(
-            r.getId(),
-            r.getUser().getId(),
-            r.getEmployee().getId(),
-            r.getReservationTime(),
-            r.getStatus(),
-            r.getCreatedAt(),
-            r.getTreatments().stream()
+        return ReservationResponseDTO.builder()
+            .id(r.getId())
+            .userId(r.getUser().getId())
+            .employeeId(r.getEmployee().getId())
+            .reservationTime(r.getReservationTime())
+            .status(r.getStatus())
+            .createdAt(r.getCreatedAt())
+            .treatmentIds(r.getTreatments().stream()
                 .map(Treatment::getId)
-                .collect(Collectors.toSet())
-        );
+                .collect(Collectors.toSet()))
+            .build();
     }
 
     public Reservation toEntity(ReservationRequestDTO dto) {
-        Reservation r = new Reservation();
-        r.setReservationTime(dto.reservationTime());
-        r.setStatus(dto.status());
-        return r;
+        return Reservation.builder()
+            .reservationTime(dto.reservationTime())
+            .status(dto.status())
+            .build();
     }
 }
