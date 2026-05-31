@@ -1,6 +1,8 @@
 spring:
   application:
     name: backend
+  config:
+    import: optional:application-local.yml
   datasource:
     url: jdbc:postgresql://postgres:5432/snip-it-db
     username: postgres
