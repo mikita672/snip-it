@@ -3,6 +3,7 @@ package com.snipit.backend.auth;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +14,8 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-        private static final String JWT_COOKIE_NAME = "access_token";
+        private static final String ACCESS_COOKIE = "access_token";
+        private static final String REFRESH_COOKIE = "refresh_token";
         private final AuthService service;
 
         public AuthController(AuthService service) {
@@ -22,43 +24,52 @@ public class AuthController {
 
         @PostMapping("/sign-up")
         public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {
-                String jwt = service.register(request);
-                ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, jwt)
-                                .httpOnly(true)
-                                .secure(false)
-                                .path("/")
-                                .sameSite("Strict")
-                                .build();
-                return ResponseEntity.noContent()
-                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                                .build();
+                AuthTokens tokens = service.register(request);
+                return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
         @PostMapping("/sign-in")
         public ResponseEntity<Void> authenticate(@Valid @RequestBody AuthenticateRequestDTO request) {
-                String jwt = service.authenticate(request);
-                ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, jwt)
-                                .httpOnly(true)
-                                .secure(false)
-                                .path("/")
-                                .sameSite("Strict")
-                                .build();
-                return ResponseEntity.noContent()
-                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                                .build();
+                AuthTokens tokens = service.authenticate(request);
+                return withAuthCookies(tokens, ResponseEntity.noContent());
+        }
+
+        @PostMapping("/refresh")
+        public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_COOKIE) String refreshToken) {
+                AuthTokens tokens = service.rotateRefreshToken(refreshToken);
+                return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
         @PostMapping("/logout")
-        public ResponseEntity<Void> logout() {
-                ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, "")
-                                .httpOnly(true)
-                                .secure(false)
-                                .path("/")
-                                .sameSite("Strict")
-                                .maxAge(0)
+        public ResponseEntity<Void> logout(@CookieValue(name = REFRESH_COOKIE, required = false) String refreshToken) {
+                if (refreshToken != null) {
+                        service.revokeRefreshToken(refreshToken);
+                }
+                return clearAuthCookies(ResponseEntity.noContent());
+        }
+
+        private ResponseEntity<Void> withAuthCookies(AuthTokens tokens, ResponseEntity.HeadersBuilder<?> builder) {
+                ResponseCookie access = ResponseCookie.from(ACCESS_COOKIE, tokens.accessToken())
+                                .httpOnly(true).secure(false).path("/").sameSite("Strict").build();
+                ResponseCookie refresh = ResponseCookie.from(REFRESH_COOKIE, tokens.refreshToken())
+                                .httpOnly(true).secure(false).path("/api/v1/auth/refresh").sameSite("Strict").build();
+
+                return builder
+                                .header(HttpHeaders.SET_COOKIE, access.toString())
+                                .header(HttpHeaders.SET_COOKIE, refresh.toString())
                                 .build();
-                return ResponseEntity.noContent()
-                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+        }
+
+        private ResponseEntity<Void> clearAuthCookies(ResponseEntity.HeadersBuilder<?> builder) {
+                ResponseCookie access = ResponseCookie.from(ACCESS_COOKIE, "")
+                                .httpOnly(true).secure(false).path("/").sameSite("Strict").maxAge(0).build();
+                ResponseCookie refresh = ResponseCookie.from(REFRESH_COOKIE, "")
+                                .httpOnly(true).secure(false).path("/api/v1/auth/refresh").sameSite("Strict").maxAge(0)
+                                .build();
+
+                return builder
+                                .header(HttpHeaders.SET_COOKIE, access.toString())
+                                .header(HttpHeaders.SET_COOKIE, refresh.toString())
                                 .build();
         }
 }
