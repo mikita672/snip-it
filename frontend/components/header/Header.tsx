@@ -2,6 +2,7 @@ import { Scissors } from 'lucide-react'
 import { Bodoni_Moda } from 'next/font/google'
 import Link from 'next/link'
 import ThemeSelection from './ThemeSelection'
+import UserMenu from './UserMenu'
 
 const bodoni = Bodoni_Moda({
 	subsets: ['latin'],
@@ -22,7 +23,7 @@ function Header() {
 				</div>
 			</Link>
 
-			<div className="flex gap-12 items-center">
+			<div className="flex gap-8 items-center">
 				<div className="flex gap-4">
 					<Link
 						href="/services"
@@ -36,6 +37,8 @@ function Header() {
 				</div>
 
 				<ThemeSelection />
+
+				<UserMenu />
 			</div>
 		</div>
 	)
