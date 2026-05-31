@@ -20,10 +20,10 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = true)
     private String firstName;
 
-    @Column(name = "last_name")
+    @Column(name = "last_name", nullable = true)
     private String lastName;
 
     @Column(name = "is_admin", nullable = false)
@@ -40,7 +40,8 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
-    public User() {}
+    public User() {
+    }
 
     public Integer getId() {
         return id;
