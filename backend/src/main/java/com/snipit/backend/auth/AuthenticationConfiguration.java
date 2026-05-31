@@ -26,7 +26,7 @@ public class AuthenticationConfiguration {
 				.map(user -> org.springframework.security.core.userdetails.User.builder()
 						.username(user.getEmail())
 						.password(user.getPasswordHash())
-						.roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+						.roles(user.getIsAdmin() ? "ADMIN" : "USER")
 						.build())
 				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 	}
