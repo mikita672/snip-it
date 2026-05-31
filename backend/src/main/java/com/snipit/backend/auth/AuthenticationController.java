@@ -21,7 +21,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign-up")
-        public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {
         String jwt = service.register(request);
         ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, jwt)
                 .httpOnly(true)
@@ -29,13 +29,13 @@ public class AuthenticationController {
                 .path("/")
                 .sameSite("Strict")
                 .build();
-                return ResponseEntity.noContent()
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                        .build();
+                .build();
     }
 
     @PostMapping("/sign-in")
-        public ResponseEntity<Void> authenticate(@Valid @RequestBody AuthenticateRequestDTO request) {
+    public ResponseEntity<Void> authenticate(@Valid @RequestBody AuthenticateRequestDTO request) {
         String jwt = service.authenticate(request);
         ResponseCookie cookie = ResponseCookie.from(JWT_COOKIE_NAME, jwt)
                 .httpOnly(true)
@@ -43,9 +43,9 @@ public class AuthenticationController {
                 .path("/")
                 .sameSite("Strict")
                 .build();
-                return ResponseEntity.noContent()
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                        .build();
+                .build();
     }
 
     @PostMapping("/logout")
@@ -57,7 +57,7 @@ public class AuthenticationController {
                 .sameSite("Strict")
                 .maxAge(0)
                 .build();
-                return ResponseEntity.noContent()
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
     }
