@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import static org.springframework.security.core.userdetails.User.builder;
+
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
 
@@ -31,7 +33,7 @@ public class AuthService {
         user.setIsAdmin(false);
         repository.save(user);
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+        UserDetails userDetails = builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
                 .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
@@ -43,7 +45,7 @@ public class AuthService {
         authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = repository.findByEmail(request.getEmail()).orElseThrow();
-        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+        UserDetails userDetails = builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
                 .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
