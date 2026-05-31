@@ -8,11 +8,11 @@ const bodoni = Bodoni_Moda({
 	subsets: ['latin'],
 	weight: '700',
 	style: 'italic',
-})
+});
 
 function Header() {
 	return (
-		<div className="py-3 px-24 flex justify-between items-center border-b">
+		<div className="py-3 px-2 md:px-24 flex justify-between items-center border-b">
 			<Link href="/">
 				<div
 					className={`text-xl cursor-pointer hover:opacity-85 hover:text-primary
@@ -24,7 +24,7 @@ function Header() {
 			</Link>
 
 			<div className="flex gap-8 items-center">
-				<div className="flex gap-4">
+				<div className="hidden md:flex gap-4">
 					<Link
 						href="/services"
 						className="text-sm text-primary cursor-pointer hover:opacity-75"
