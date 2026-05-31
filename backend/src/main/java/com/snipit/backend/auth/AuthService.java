@@ -36,7 +36,7 @@ public class AuthService {
         UserDetails userDetails = builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
-                .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                 .build();
         String accessToken = jwtService.generateToken(userDetails);
         String refreshToken = issueRefreshToken(user);
@@ -50,7 +50,7 @@ public class AuthService {
         UserDetails userDetails = builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
-                .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                 .build();
         String accessToken = jwtService.generateToken(userDetails);
         String refreshToken = issueRefreshToken(user);
@@ -70,7 +70,7 @@ public class AuthService {
         String newAccess = jwtService.generateToken(builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
-                .roles(Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                 .build());
         String newRefresh = issueRefreshToken(user);
         return new AuthTokens(newAccess, newRefresh);
