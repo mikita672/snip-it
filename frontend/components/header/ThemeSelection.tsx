@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes"
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { CogIcon, MoonIcon, SunIcon } from "lucide-react";
 
 function ThemeSelection() {
 	const { setTheme } = useTheme();
@@ -18,14 +18,26 @@ function ThemeSelection() {
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				<DropdownMenuItem className="cursor-pointer" onClick={() => setTheme("light")}>
-					Light
+				<DropdownMenuItem
+					className="cursor-pointer flex gap-4 items-center"
+					onClick={() => setTheme("light")}
+				>
+					<SunIcon />
+					<p>Light</p>
 				</DropdownMenuItem>
-				<DropdownMenuItem className="cursor-pointer" onClick={() => setTheme("dark")}>
-					Dark
+				<DropdownMenuItem
+					className="cursor-pointer flex gap-4 items-center"
+					onClick={() => setTheme("dark")}
+				>
+					<MoonIcon />
+					<p>Dark</p>
 				</DropdownMenuItem>
-				<DropdownMenuItem className="cursor-pointer" onClick={() => setTheme("system")}>
-					System
+				<DropdownMenuItem
+					className="cursor-pointer flex gap-4 items-center"
+					onClick={() => setTheme("system")}
+				>
+					<CogIcon />
+					<p>System</p>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
