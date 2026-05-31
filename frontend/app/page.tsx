@@ -1,12 +1,31 @@
 import GreetingsSection from "@/components/home/GreetingsSection"
+import TreatmentResults from "@/components/home/TreatmentResults";
 import { Separator } from "@/components/ui/separator"
 
-function HomePage() {
+interface Props {
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+async function HomePage({ searchParams }: Props) {
+	const params = new URLSearchParams();
+	Object.entries(await searchParams).forEach(([key, value]) => {
+		if (Array.isArray(value)) {
+			value.forEach(v => params.append(key, v));
+		} else if (value !== undefined) {
+			params.append(key, value);
+		}
+	});
+
 	return (
 		<div className="flex flex-col gap-8">
 			<GreetingsSection />
 
 			<Separator />
+
+			<div className="grid grid-cols-12">
+				<TreatmentResults params={params} />
+
+			</div>
 		</div>
 	)
 }
