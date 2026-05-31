@@ -1,9 +1,11 @@
 package com.snipit.backend.reservation;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+@Builder
 public record ReservationResponseDTO(
     Integer id,
     Integer userId,
