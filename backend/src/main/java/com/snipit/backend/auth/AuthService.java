@@ -28,8 +28,8 @@ public class AuthService {
 
     public String register(RegisterRequestDTO request) {
         User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.email());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setIsAdmin(false);
         repository.save(user);
 
@@ -43,8 +43,8 @@ public class AuthService {
 
     public String authenticate(AuthenticateRequestDTO request) {
         authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        var user = repository.findByEmail(request.getEmail()).orElseThrow();
+            .authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+        var user = repository.findByEmail(request.email()).orElseThrow();
         UserDetails userDetails = builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
