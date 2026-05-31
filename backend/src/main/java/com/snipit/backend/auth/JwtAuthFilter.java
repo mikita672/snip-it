@@ -30,9 +30,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
-        final String jwt;
         final String userEmail;
-        jwt = resolveJwtFromCookie(request);
+        final String jwt = resolveJwtFromCookie(request);
         if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
