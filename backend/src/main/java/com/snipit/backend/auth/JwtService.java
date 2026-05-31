@@ -13,14 +13,12 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
     private final AuthProperties authProperties;
-
-    public JwtService(AuthProperties authProperties) {
-        this.authProperties = authProperties;
-    }
 
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);

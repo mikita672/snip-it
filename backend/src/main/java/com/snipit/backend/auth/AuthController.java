@@ -10,17 +10,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
         private static final String ACCESS_COOKIE = "access_token";
         private static final String REFRESH_COOKIE = "refresh_token";
         private final AuthService service;
-
-        public AuthController(AuthService service) {
-                this.service = service;
-        }
 
         @PostMapping("/sign-up")
         public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {

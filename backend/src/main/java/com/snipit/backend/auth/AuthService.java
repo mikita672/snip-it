@@ -14,8 +14,10 @@ import com.snipit.backend.auth.refreshTokens.RefreshTokenRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
 import com.snipit.backend.auth.refreshTokens.RefreshToken;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -23,17 +25,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthProperties authProperties;
-
-    public AuthService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService,
-            AuthenticationManager authenticationManager, RefreshTokenRepository refreshTokenRepository,
-            AuthProperties authProperties) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.authProperties = authProperties;
-    }
 
     public AuthTokens register(RegisterRequestDTO request) {
         User user = new User();
