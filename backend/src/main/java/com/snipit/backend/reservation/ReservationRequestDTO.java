@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 public record ReservationRequestDTO(
-    @NotNull Integer userId,
     @NotNull Integer employeeId,
     @NotNull @Future @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime reservationTime,
     String status,
