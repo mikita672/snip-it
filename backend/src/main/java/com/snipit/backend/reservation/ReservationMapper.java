@@ -18,11 +18,9 @@ public class ReservationMapper {
             r.getReservationTime(),
             r.getStatus(),
             r.getCreatedAt(),
-            r.getTreatments() != null
-                ? r.getTreatments().stream()
-                    .map(Treatment::getId)
-                    .collect(Collectors.toSet())
-                : Set.of()
+            r.getTreatments().stream()
+                .map(Treatment::getId)
+                .collect(Collectors.toSet())
         );
     }
 
