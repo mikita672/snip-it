@@ -60,11 +60,9 @@ public class AuthService {
     public AuthTokens rotateRefreshToken(String rawRefreshToken) {
         String hash = hashToken(rawRefreshToken);
         RefreshToken stored = refreshTokenRepository.findByTokenHash(hash)
-                .filter(t -> !t.isRevoked())
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
                 .orElseThrow();
-        stored.setRevoked(true);
-        refreshTokenRepository.save(stored);
+        refreshTokenRepository.delete(stored);
 
         User user = stored.getUser();
         String newAccess = jwtService.generateToken(builder()
@@ -78,14 +76,11 @@ public class AuthService {
 
     public void revokeRefreshToken(String rawRefreshToken) {
         refreshTokenRepository.findByTokenHash(hashToken(rawRefreshToken))
-                .ifPresent(t -> {
-                    t.setRevoked(true);
-                    refreshTokenRepository.save(t);
-                });
+                .ifPresent(refreshTokenRepository::delete);
     }
 
     private String issueRefreshToken(User user) {
-        String raw = jwtService.generateOpaqueToken(); // new method
+        String raw = jwtService.generateOpaqueToken();
         RefreshToken token = new RefreshToken();
         token.setTokenHash(hashToken(raw));
         token.setExpiresAt(Instant.now().plus(authProperties.getRefreshToken().getExpirationTime()));

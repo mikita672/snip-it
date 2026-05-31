@@ -30,9 +30,6 @@ public class RefreshToken {
     @Column(nullable = false)
     private Instant expiresAt;
 
-    @Column(nullable = false)
-    private boolean revoked = false;
-
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private User user;
 }
