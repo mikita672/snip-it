@@ -10,13 +10,13 @@ import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
 
 @Service
-public class AuthenticationService {
+public class AuthService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService,
+    public AuthService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService,
             AuthenticationManager authenticationManager) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
