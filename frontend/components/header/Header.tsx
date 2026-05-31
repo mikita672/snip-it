@@ -1,4 +1,4 @@
-import { Scissors } from 'lucide-react'
+import { ScissorsIcon } from 'lucide-react'
 import { Bodoni_Moda } from 'next/font/google'
 import Link from 'next/link'
 import ThemeSelection from './ThemeSelection'
@@ -18,7 +18,7 @@ function Header() {
 					className={`text-xl cursor-pointer hover:opacity-85 hover:text-primary
 						${bodoni.className} flex items-center gap-2 transition-colors`}
 				>
-					<Scissors size={20} />
+					<ScissorsIcon size={20} />
 					<span>Snip-it</span>
 				</div>
 			</Link>
