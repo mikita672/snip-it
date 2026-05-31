@@ -1,6 +1,7 @@
 import { Scissors } from 'lucide-react'
 import { Bodoni_Moda } from 'next/font/google'
 import Link from 'next/link'
+import ThemeSelection from './ThemeSelection'
 
 const bodoni = Bodoni_Moda({
 	subsets: ['latin'],
@@ -21,7 +22,7 @@ function Header() {
 				</div>
 			</Link>
 
-			<div className="flex gap-12">
+			<div className="flex gap-12 items-center">
 				<div className="flex gap-4">
 					<Link
 						href="/services"
@@ -33,6 +34,8 @@ function Header() {
 						className="text-sm text-primary cursor-pointer hover:opacity-75"
 					>MY APPOINTMENTS</Link>
 				</div>
+
+				<ThemeSelection />
 			</div>
 		</div>
 	)
