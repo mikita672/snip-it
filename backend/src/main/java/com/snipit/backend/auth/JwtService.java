@@ -17,7 +17,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
-    private static final String SECRET_KEY = "fad111bde61a46f56ab0173445020aed83e5560cbda515e10605493cf93ffa54";
+    private final AuthProperties authProperties;
+
+    public JwtService(AuthProperties authProperties) {
+        this.authProperties = authProperties;
+    }
 
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
@@ -42,13 +46,20 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return Jwts.builder()
-                .claims().add(extraClaims).and()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
-                .compact();
+        var builder = Jwts.builder()
+            .claims().add(extraClaims).and()
+            .subject(userDetails.getUsername())
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis()
+                + authProperties.getJwt().getExpirationTime().toMillis()))
+            .signWith(getSigningKey(), Jwts.SIG.HS256);
+
+        String issuer = authProperties.getJwt().getIssuer();
+        if (issuer != null && !issuer.isBlank()) {
+            builder.issuer(issuer);
+        }
+
+        return builder.compact();
     }
 
     public boolean isTokenValid(String jwt, UserDetails userDetails) {
@@ -66,7 +77,7 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(authProperties.getJwt().getSecret());
 
         return Keys.hmacShaKeyFor(keyBytes);
     }
