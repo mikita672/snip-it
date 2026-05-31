@@ -15,6 +15,18 @@ public class TreatmentService {
 	private final TreatmentRepository treatmentRepository;
 	private final TreatmentDTOMapper treatmentDTOMapper;
 	private final static int PAGE_SIZE = 6;
+	
+	public enum SortBy {
+		PRICE,
+		DURATION;
+
+		String asString() {
+			return switch (this) {
+				case PRICE -> "price";
+				case DURATION -> "minDurationMinutes";
+			};
+		}
+	}
 
 	public TreatmentService(TreatmentRepository treatmentRepository, TreatmentDTOMapper treatmentDTOMapper) {
 		this.treatmentRepository = treatmentRepository;
@@ -22,8 +34,8 @@ public class TreatmentService {
 	}
 
 
-	public List<TreatmentPreviewDTO> getTreatmentPreviews(int pageNumber, String sortBy, boolean sortDescending) {
-		Sort sort = Sort.by(sortBy);
+	public List<TreatmentPreviewDTO> getTreatmentPreviews(int pageNumber, SortBy sortBy, boolean sortDescending) {
+		Sort sort = Sort.by(sortBy.asString());
 		if (sortDescending) {
 			sort = sort.descending();
 		}
