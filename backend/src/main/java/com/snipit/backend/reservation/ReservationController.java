@@ -27,13 +27,13 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<ReservationResponseDTO> create(@RequestBody @Valid ReservationRequestDTO room) {
-        return new ResponseEntity<>(reservationService.create(room), HttpStatus.CREATED);
+    public ResponseEntity<ReservationResponseDTO> create(@RequestBody @Valid ReservationRequestDTO r) {
+        return new ResponseEntity<>(reservationService.create(r), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ReservationResponseDTO update(@PathVariable Integer id, @RequestBody @Valid ReservationRequestDTO room) {
-        return reservationService.update(id, room);
+    @PatchMapping("/{id}")
+    public ReservationResponseDTO update(@PathVariable Integer id, @RequestBody @Valid ReservationRequestDTO r) {
+        return reservationService.update(id, r);
     }
 
     @DeleteMapping("/{id}")
