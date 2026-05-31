@@ -54,7 +54,7 @@ public class ReservationService{
         Set<Treatment> treatments = treatmentRepository.findAllById(dto.getTreatmentIds())
             .stream().collect(Collectors.toSet());
 
-        Reservation r = reservationMapper.toEntity(dto, user, employee, treatments);
+        Reservation r = reservationMapper.toEntity(dto);
         Reservation saved = reservationRepository.save(r);
         return reservationMapper.toResponseDTO(saved);
     }
@@ -62,22 +62,8 @@ public class ReservationService{
     public ReservationResponseDTO update(Integer id, ReservationRequestDTO req) {
         Reservation reservation = reservationRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Cannot find reservation with id: " + id));
-
-        User user = userRepository.findById(req.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + req.getUserId()));
-
-        Employee employee = employeeRepository.findById(req.getEmployeeId())
-            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + req.getEmployeeId()));
-
-        Set<Treatment> treatments = treatmentRepository.findAllById(req.getTreatmentIds())
-            .stream()
-            .collect(Collectors.toSet());
-
-        reservation.setUser(user);
-        reservation.setEmployee(employee);
-        reservation.setReservationTime(req.getReservationTime());
-        reservation.setStatus(req.getStatus());
-        reservation.setTreatments(treatments);
+        reservation.setReservationTime(req.reservationTime());
+        reservation.setStatus(req.status());
 
         Reservation saved = reservationRepository.save(reservation);
         return reservationMapper.toResponseDTO(saved);
