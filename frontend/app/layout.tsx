@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Header from "@/components/header/Header";
 import { ThemeProvider } from "next-themes";
+import Footer from "@/components/Footer";
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -41,9 +42,10 @@ export default function RootLayout({
                 >
                     <div className="min-h-full flex flex-col">
                         <Header />
-                        <div className="w-full py-6 px-2 md:py-12 md:px-24">
+                        <div className="w-full py-6 px-4 md:py-12 md:px-24">
                             {children}
                         </div>
+                        <Footer />
                     </div>
                 </ThemeProvider>
             </body>

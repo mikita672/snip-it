@@ -12,7 +12,7 @@ const bodoni = Bodoni_Moda({
 
 function Header() {
 	return (
-		<div className="py-3 px-2 md:px-24 flex justify-between items-center border-b">
+		<div className="py-3 px-4 md:px-24 flex justify-between items-center border-b">
 			<Link href="/">
 				<div
 					className={`text-xl cursor-pointer hover:opacity-85 hover:text-primary
