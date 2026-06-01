@@ -2,6 +2,8 @@ package com.snipit.backend.reservation;
 
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.treatment.Treatment;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.snipit.backend.employee.EmployeeRepository;
 import com.snipit.backend.treatment.TreatmentRepository;
@@ -46,17 +48,29 @@ public class ReservationService{
         return reservationMapper.toResponseDTO(r);
     }
 
+     private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     public ReservationResponseDTO create(ReservationRequestDTO dto) {
-        User user = userRepository.findById(dto.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + dto.getUserId()));
-        Employee employee = employeeRepository.findById(dto.getEmployeeId())
-            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + dto.getEmployeeId()));
-        Set<Treatment> treatments = treatmentRepository.findAllById(dto.getTreatmentIds())
+        User user = getCurrentUser();
+
+        Employee employee = employeeRepository.findById(dto.employeeId())
+            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        Set<Treatment> treatments = treatmentRepository.findAllById(dto.treatmentIds())
             .stream().collect(Collectors.toSet());
 
         Reservation r = reservationMapper.toEntity(dto);
-        Reservation saved = reservationRepository.save(r);
-        return reservationMapper.toResponseDTO(saved);
+        r.setUser(user);
+        r.setEmployee(employee);
+        r.setTreatments(treatments);
+
+        return reservationMapper.toResponseDTO(reservationRepository.save(r));
     }
     
     public ReservationResponseDTO update(Integer id, ReservationRequestDTO req) {
