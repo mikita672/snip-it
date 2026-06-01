@@ -41,7 +41,7 @@ public class TreatmentService {
 		if (searchToken.isEmpty()) {
 			return treatmentRepository.findAll(pageRequest);
 		} else {
-			return treatmentRepository.findByNameStartingWithIgnoreCase(searchToken, pageRequest);
+			return treatmentRepository.findByNameContainsIgnoreCase(searchToken, pageRequest);
 		}
 	}
 }
