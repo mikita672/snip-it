@@ -13,6 +13,8 @@ import java.util.Base64;
 import com.snipit.backend.auth.refreshTokens.RefreshTokenRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
+import com.snipit.backend.auth.dto.AuthenticateRequestDTO;
+import com.snipit.backend.auth.dto.RegisterRequestDTO;
 import com.snipit.backend.auth.refreshTokens.RefreshToken;
 import lombok.RequiredArgsConstructor;
 
