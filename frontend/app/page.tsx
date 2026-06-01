@@ -1,5 +1,5 @@
+import EmployeesSection from "@/components/home/EmployeesSection";
 import GreetingsSection from "@/components/home/GreetingsSection"
-import TreatmentsResults from "@/components/home/TreatmentsSection/TreatmentsResults";
 import TreatmentsSection from "@/components/home/TreatmentsSection/TreatmentsSection";
 import { Separator } from "@/components/ui/separator"
 
@@ -23,9 +23,10 @@ async function HomePage({ searchParams }: Props) {
 
 			<Separator />
 
-			<div className="grid grid-cols-12">
+			<div className="grid grid-cols-3 gap-12">
 				<TreatmentsSection params={params} />
 
+				<EmployeesSection />
 			</div>
 		</div>
 	)

@@ -14,6 +14,7 @@ public class EmployeeDTOMapper {
 			.treatmentsPreview(new EmployeeTreatmentsPreviewDTO(
 				employee.getTreatments().size(),
 				employee.getTreatments().stream()
+					.limit(3)
 					.map(treatment -> treatment.getName())
 					.toList()
 			))
