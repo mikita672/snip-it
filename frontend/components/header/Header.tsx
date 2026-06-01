@@ -27,13 +27,13 @@ function Header() {
 				<div className="hidden md:flex gap-4">
 					<Link
 						href="/services"
-						className="text-sm text-primary cursor-pointer hover:opacity-75"
-					>SERVICES</Link>
+						className="text-sm text-primary cursor-pointer hover:opacity-75 uppercase"
+					>Services</Link>
 
 					<Link
 						href="/appointments"
-						className="text-sm text-primary cursor-pointer hover:opacity-75"
-					>MY APPOINTMENTS</Link>
+						className="text-sm text-primary cursor-pointer hover:opacity-75 uppercase"
+					>My appointments</Link>
 				</div>
 
 				<ThemeSelection />

@@ -1,5 +1,6 @@
 import GreetingsSection from "@/components/home/GreetingsSection"
-import TreatmentResults from "@/components/home/TreatmentResults";
+import TreatmentsResults from "@/components/home/TreatmentsSection/TreatmentsResults";
+import TreatmentsSection from "@/components/home/TreatmentsSection/TreatmentsSection";
 import { Separator } from "@/components/ui/separator"
 
 interface Props {
@@ -23,7 +24,7 @@ async function HomePage({ searchParams }: Props) {
 			<Separator />
 
 			<div className="grid grid-cols-12">
-				<TreatmentResults params={params} />
+				<TreatmentsSection params={params} />
 
 			</div>
 		</div>
