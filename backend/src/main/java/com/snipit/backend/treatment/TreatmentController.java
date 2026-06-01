@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.snipit.backend.treatment.dto.TreatmentDTOMapper;
 import com.snipit.backend.treatment.dto.TreatmentPreviewDTO;
+import com.snipit.backend.treatment.dto.TreatmentsPreviewPageDTO;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class TreatmentController {
 	}
 
 	@GetMapping("/preview")
-	public List<TreatmentPreviewDTO> getTreatmentPreviews(
+	public TreatmentsPreviewPageDTO getTreatmentPreviews(
 		@RequestParam(defaultValue = "1")
 		Integer pageNumber,
 		@RequestParam(defaultValue = "PRICE")
@@ -41,9 +42,13 @@ public class TreatmentController {
 			sortDescending,
 			searchToken.trim()
 		);
-		return page.stream()
+		List<TreatmentPreviewDTO> treatments = page.stream()
 			.map(treatmentDTOMapper::previewDTOFromEntity)
 			.toList();
+		return TreatmentsPreviewPageDTO.builder()
+			.totalPages(page.getTotalPages())
+			.treatments(treatments)
+			.build();
 	}
 
 }

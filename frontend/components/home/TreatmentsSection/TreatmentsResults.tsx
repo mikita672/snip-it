@@ -1,6 +1,7 @@
-import { TreatmentPreview } from '@/types/treatment/TreatmentPreview';
 import { Item, ItemContent, ItemDescription, ItemFooter, ItemTitle } from '../../ui/item';
 import { ClockIcon } from 'lucide-react';
+import TreatmentsPagination from './TreatmentsPagination';
+import { TreatmentsPreviewPage } from '@/types/treatment/TreatmentsPreviewPage';
 
 interface Props {
 	params: URLSearchParams;
@@ -15,15 +16,15 @@ async function TreatmentsResults({ params }: Props) {
 		return <p className="text-center font-bold">Failed to parse services</p>
 	}
 
-	const data: TreatmentPreview[] = await response.json();
+	const data: TreatmentsPreviewPage = await response.json();
 
-	if (data.length === 0) {
+	if (data.treatments.length === 0) {
 		return <p className="text-center font-bold">No services found...</p>
 	}
 
 	return (
 		<div className="flex flex-col gap-1">
-			{data.map((treatment) => (
+			{data.treatments.map((treatment) => (
 				<Item key={treatment.id} className="bg-card hover:opacity-75 cursor-pointer border-foreground border-opacity-75">
 					<ItemContent>
 						<ItemTitle className="w-full flex items-center justify-between">
@@ -39,6 +40,8 @@ async function TreatmentsResults({ params }: Props) {
 					</ItemContent>
 				</Item>
 			))}
+
+			<TreatmentsPagination totalPages={data.totalPages} />
 		</div>
 	);
 }
