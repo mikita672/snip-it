@@ -1,7 +1,13 @@
 "use client"
 
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react";
 
 type SortBy = "PRICE" | "DURATION";
 
@@ -14,6 +20,7 @@ function TreatmentsHeader() {
 		? rawSortBy
 		: "PRICE";
 	const sortDescending = (searchParams.get('sortDescending') ?? "false") === "true";
+	const [searchToken, setSearchToken] = useState(searchParams.get('searchToken') ?? "");
 
 	const handleSortSelection = (value: string) => {
 		const [newSortBy, newSortDescendingStr] = value.split('_');
@@ -26,8 +33,15 @@ function TreatmentsHeader() {
 		router.refresh();
 	}
 
+	const handleSearch = () => {
+		const newSearchParams = new URLSearchParams(searchParams);
+		newSearchParams.set('searchToken', searchToken);
+		router.replace(`${pathname}?${newSearchParams.toString()}`, { scroll: false });
+		router.refresh();
+	}
+
 	return (
-		<div>
+		<div className="flex flex-col gap-4">
 			<div className="w-full text-sm flex justify-between items-center">
 				<p className="uppercase">Services</p>
 
@@ -52,6 +66,25 @@ function TreatmentsHeader() {
 					</Select>
 				</div>
 			</div>
+
+			<Field className="bg-card">
+				<ButtonGroup>
+					<InputGroup>
+						<InputGroupAddon>
+							<SearchIcon />
+						</InputGroupAddon>
+						<InputGroupInput
+							value={searchToken}
+							onChange={(e) => setSearchToken(e.target.value)}
+							placeholder="Search services..."
+						/>
+					</InputGroup>
+					<Button
+						className="cursor-pointer hover:opacity-75"
+						onClick={handleSearch}
+					>Search</Button>
+				</ButtonGroup>
+			</Field>
 		</div>
 	)
 }
