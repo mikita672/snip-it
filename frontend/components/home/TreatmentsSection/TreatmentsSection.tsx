@@ -7,7 +7,7 @@ interface Props {
 
 function TreatmentsSection({ params }: Props) {
 	return (
-		<div className="flex flex-col gap-4 col-span-2">
+		<div className="flex flex-col gap-4 md:col-span-2">
 			<TreatmentsHeader />
 
 			<TreatmentsResults params={params} />

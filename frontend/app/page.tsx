@@ -23,7 +23,7 @@ async function HomePage({ searchParams }: Props) {
 
 			<Separator />
 
-			<div className="grid grid-cols-3 gap-12">
+			<div className="flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-12">
 				<TreatmentsSection params={params} />
 
 				<EmployeesSection />

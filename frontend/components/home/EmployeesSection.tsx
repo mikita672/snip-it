@@ -18,7 +18,7 @@ async function EmployeesSection() {
 	}
 
 	return (
-		<div className="col-span-1 flex flex-col gap-4">
+		<div className="md:col-span-1 flex flex-col gap-4">
 			<p className="uppercase">Our team</p>
 
 			<div className="flex flex-col gap-2">
@@ -28,8 +28,8 @@ async function EmployeesSection() {
 					const notListedCount = treatmentsCount - treatments.length;
 					return <Item key={i} className="bg-card">
 						<ItemContent>
-							<ItemTitle>{employee.firstName} {employee.lastName}</ItemTitle>
-							<ItemDescription className="flex items-center gap-1">
+							<ItemTitle className="text-lg">{employee.firstName} {employee.lastName}</ItemTitle>
+							<ItemDescription className="flex flex-wrap items-center gap-1">
 								{treatments.map((treatment, j) => (
 									<Badge key={j}>{treatment}</Badge>
 								))}
@@ -39,7 +39,7 @@ async function EmployeesSection() {
 										<span>+{notListedCount}</span>
 								}
 							</ItemDescription>
-							<ItemFooter>{employee.position}</ItemFooter>
+							<ItemFooter className="opacity-75 text-xs">{employee.position}</ItemFooter>
 						</ItemContent>
 					</Item>
 				})}
