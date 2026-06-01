@@ -27,7 +27,7 @@ public class TreatmentService {
 	}
 
 
-	public Page<Treatment> getTreatmentPreviews(
+	public Page<Treatment> searchTreatments(
 		int pageNumber,
 		SortBy sortBy,
 		boolean sortDescending,

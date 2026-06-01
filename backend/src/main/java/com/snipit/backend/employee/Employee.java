@@ -28,6 +28,9 @@ public class Employee {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(name = "position", nullable = false)
+    private String position;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -43,4 +46,5 @@ public class Employee {
         joinColumns = @JoinColumn(name = "employee_id"),
         inverseJoinColumns = @JoinColumn(name = "service_id")
     )
-    private Set<Treatment> treatments = new HashSet<>();}
+    private Set<Treatment> treatments = new HashSet<>();
+}

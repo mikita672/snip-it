@@ -26,7 +26,7 @@ public class TreatmentController {
 	}
 
 	@GetMapping("/preview")
-	public TreatmentsPreviewPageDTO getTreatmentPreviews(
+	public TreatmentsPreviewPageDTO getTreatmentsPreviews(
 		@RequestParam(defaultValue = "1")
 		Integer pageNumber,
 		@RequestParam(defaultValue = "PRICE")
@@ -36,7 +36,7 @@ public class TreatmentController {
 		@RequestParam(defaultValue = "")
 		String searchToken
 	) {
-		Page<Treatment> page = treatmentService.getTreatmentPreviews(
+		Page<Treatment> page = treatmentService.searchTreatments(
 			pageNumber - 1,
 			sortBy,
 			sortDescending,
