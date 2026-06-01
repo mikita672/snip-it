@@ -23,23 +23,25 @@ async function TreatmentsResults({ params }: Props) {
 	}
 
 	return (
-		<div className="flex flex-col gap-1">
-			{data.treatments.map((treatment) => (
-				<Item key={treatment.id} className="bg-card hover:opacity-75 cursor-pointer border-foreground border-opacity-75">
-					<ItemContent>
-						<ItemTitle className="w-full flex items-center justify-between">
-							<p className="font-bold">{treatment.name}</p>
-							<p className="font-bold">${treatment.price}</p>
-						</ItemTitle>
-						<ItemDescription>{treatment.description}</ItemDescription>
-						<ItemFooter>
-							<div className="flex items-center gap-2 opacity-35 text-xs">
-								<ClockIcon size={16} /> {treatment.minDurationMinutes}-{treatment.maxDurationMinutes} min
-							</div>
-						</ItemFooter>
-					</ItemContent>
-				</Item>
-			))}
+		<div className="flex flex-col gap-4">
+			<div className="flex flex-col gap-1">
+				{data.treatments.map((treatment) => (
+					<Item key={treatment.id} className="bg-card hover:opacity-75 cursor-pointer border-foreground border-opacity-75">
+						<ItemContent>
+							<ItemTitle className="w-full flex items-center justify-between">
+								<p className="font-bold">{treatment.name}</p>
+								<p className="font-bold">${treatment.price}</p>
+							</ItemTitle>
+							<ItemDescription>{treatment.description}</ItemDescription>
+							<ItemFooter>
+								<div className="flex items-center gap-2 opacity-35 text-xs">
+									<ClockIcon size={16} /> {treatment.minDurationMinutes}-{treatment.maxDurationMinutes} min
+								</div>
+							</ItemFooter>
+						</ItemContent>
+					</Item>
+				))}
+			</div>
 
 			<TreatmentsPagination totalPages={data.totalPages} />
 		</div>
