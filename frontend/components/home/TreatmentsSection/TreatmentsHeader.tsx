@@ -33,7 +33,8 @@ function TreatmentsHeader() {
 		router.refresh();
 	}
 
-	const handleSearch = () => {
+	const handleSearch = (e: React.SubmitEvent) => {
+		e.preventDefault();
 		const newSearchParams = new URLSearchParams(searchParams);
 		newSearchParams.set('searchToken', searchToken);
 		router.replace(`${pathname}?${newSearchParams.toString()}`, { scroll: false });
@@ -67,24 +68,27 @@ function TreatmentsHeader() {
 				</div>
 			</div>
 
-			<Field className="bg-card">
-				<ButtonGroup>
-					<InputGroup>
-						<InputGroupAddon>
-							<SearchIcon />
-						</InputGroupAddon>
-						<InputGroupInput
-							value={searchToken}
-							onChange={(e) => setSearchToken(e.target.value)}
-							placeholder="Search services..."
-						/>
-					</InputGroup>
-					<Button
-						className="cursor-pointer hover:opacity-75"
-						onClick={handleSearch}
-					>Search</Button>
-				</ButtonGroup>
-			</Field>
+
+			<form onSubmit={handleSearch}>
+				<Field className="bg-card">
+					<ButtonGroup>
+						<InputGroup>
+							<InputGroupAddon>
+								<SearchIcon />
+							</InputGroupAddon>
+							<InputGroupInput
+								value={searchToken}
+								onChange={(e) => setSearchToken(e.target.value)}
+								placeholder="Search services..."
+							/>
+						</InputGroup>
+						<Button
+							className="cursor-pointer hover:opacity-75"
+							type="submit"
+						>Search</Button>
+					</ButtonGroup>
+				</Field>
+			</form>
 		</div>
 	)
 }

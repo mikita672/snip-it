@@ -12,10 +12,14 @@ async function TreatmentsResults({ params }: Props) {
 	});
 
 	if (!response.ok) {
-		return <p>Failed to parse services</p>
+		return <p className="text-center font-bold">Failed to parse services</p>
 	}
 
 	const data: TreatmentPreview[] = await response.json();
+
+	if (data.length === 0) {
+		return <p className="text-center font-bold">No services found...</p>
+	}
 
 	return (
 		<div className="flex flex-col gap-1">
