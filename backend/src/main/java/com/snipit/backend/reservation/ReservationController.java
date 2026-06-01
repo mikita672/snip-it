@@ -1,4 +1,6 @@
 package com.snipit.backend.reservation;
+import com.snipit.backend.reservation.dto.ReservationRequestDTO;
+import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
