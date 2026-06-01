@@ -1,5 +1,7 @@
 package com.snipit.backend.reservation;
 
+import com.snipit.backend.reservation.dto.ReservationRequestDTO;
+import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import org.springframework.stereotype.Component;
 import java.util.stream.Collectors;
 import com.snipit.backend.treatment.Treatment;

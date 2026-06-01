@@ -1,4 +1,4 @@
-package com.snipit.backend.reservation;
+package com.snipit.backend.reservation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;

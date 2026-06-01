@@ -2,6 +2,8 @@ package com.snipit.backend.reservation;
 
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.treatment.Treatment;
+import com.snipit.backend.reservation.dto.ReservationRequestDTO;
+import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
