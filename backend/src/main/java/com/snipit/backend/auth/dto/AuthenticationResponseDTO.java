@@ -1,12 +1,12 @@
-package com.snipit.backend.auth;
+package com.snipit.backend.auth.dto;
 
-public class AuthenticationResponse {
+public class AuthenticationResponseDTO {
     private String token;
 
-    public AuthenticationResponse() {
+    public AuthenticationResponseDTO() {
     }
 
-    public AuthenticationResponse(String token) {
+    public AuthenticationResponseDTO(String token) {
         this.token = token;
     }
 

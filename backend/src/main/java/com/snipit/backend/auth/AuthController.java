@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.snipit.backend.auth.dto.AuthenticateRequestDTO;
+import com.snipit.backend.auth.dto.RegisterRequestDTO;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
