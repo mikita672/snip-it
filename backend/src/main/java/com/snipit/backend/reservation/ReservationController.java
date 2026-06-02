@@ -20,17 +20,17 @@ public class ReservationController {
     
     @GetMapping
     public List<ReservationResponseDTO> getAll(){
-        return reservationService.findAll();
+        return reservationService.findAllReservations();
     }
 
     @GetMapping("/{id}")
     public ReservationResponseDTO getById(@PathVariable Integer id) {
-        return reservationService.findById(id);
+        return reservationService.findReservationById(id);
     }
 
     @PostMapping
-    public ResponseEntity<ReservationResponseDTO> create(@RequestBody @Valid ReservationRequestDTO reservation) {
-        return new ResponseEntity<>(reservationService.create(reservation), HttpStatus.CREATED);
+    public ReservationResponseDTO create(@AuthenticationPrincipal User user, @RequestBody @Valid ReservationRequestDTO dto) {
+        return reservationService.createReservation(dto, user);
     }
 
     @PatchMapping("/{id}")
