@@ -5,6 +5,7 @@ import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import com.snipit.backend.employee.EmployeeRepository;
+import com.snipit.backend.exceptions.ResourceNotFoundException;
 import com.snipit.backend.treatment.TreatmentRepository;
 import com.snipit.backend.user.User;
 
