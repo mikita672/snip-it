@@ -9,15 +9,15 @@ import com.snipit.backend.treatment.Treatment;
 @Component
 public class ReservationMapper {
 
-    public ReservationResponseDTO toResponseDTO(Reservation r) {
+    public ReservationResponseDTO toResponseDTO(Reservation reservation) {
         return ReservationResponseDTO.builder()
-            .id(r.getId())
-            .userId(r.getUser().getId())
-            .employeeId(r.getEmployee().getId())
-            .reservationTime(r.getReservationTime())
-            .status(r.getStatus())
-            .createdAt(r.getCreatedAt())
-            .treatmentIds(r.getTreatments().stream()
+            .id(reservation.getId())
+            .userId(reservation.getUser().getId())
+            .employeeId(reservation.getEmployee().getId())
+            .reservationTime(reservation.getReservationTime())
+            .status(reservation.getStatus())
+            .createdAt(reservation.getCreatedAt())
+            .treatmentIds(reservation.getTreatments().stream()
                 .map(Treatment::getId)
                 .collect(Collectors.toSet()))
             .build();
