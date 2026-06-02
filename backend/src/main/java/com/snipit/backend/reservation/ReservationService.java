@@ -75,12 +75,12 @@ public class ReservationService{
         return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
     }
     
-    public ReservationResponseDTO update(Integer id, ReservationRequestDTO req) {
+    public ReservationResponseDTO updateReservationStatus(Integer id, String status) {
         Reservation reservation = reservationRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Cannot find reservation with id: " + id));
-        reservation.setReservationTime(req.reservationTime());
-        reservation.setStatus(req.status());
-
+        
+        reservation.setStatus(status);
+        
         Reservation saved = reservationRepository.save(reservation);
         return reservationMapper.toResponseDTO(saved);
     }

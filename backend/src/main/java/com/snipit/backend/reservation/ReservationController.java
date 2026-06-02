@@ -34,8 +34,8 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}")
-    public ReservationResponseDTO update(@PathVariable Integer id, @RequestBody @Valid ReservationRequestDTO reservation) {
-        return reservationService.update(id, reservation);
+    public ReservationResponseDTO updateStatus(@PathVariable Integer id, @RequestParam String status) {
+        return reservationService.updateReservationStatus(id, status);
     }
 
     @DeleteMapping("/{id}")
