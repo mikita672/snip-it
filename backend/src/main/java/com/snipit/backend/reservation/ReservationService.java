@@ -69,11 +69,4 @@ public class ReservationService {
         Reservation saved = reservationRepository.save(reservation);
         return reservationMapper.toResponseDTO(saved);
     }
-
-    public void deleteReservation(Integer id) {
-        if (!reservationRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Reservation not found with id: " + id);
-        }
-        reservationRepository.deleteById(id);
-    }
 }

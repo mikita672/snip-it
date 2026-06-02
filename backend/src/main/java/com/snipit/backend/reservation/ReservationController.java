@@ -37,11 +37,4 @@ public class ReservationController {
     public ReservationResponseDTO updateStatus(@PathVariable Integer id, @RequestParam String status) {
         return reservationService.updateReservationStatus(id, status);
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        reservationService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-    
 }
