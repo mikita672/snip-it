@@ -10,9 +10,9 @@ import com.snipit.backend.user.User;
 
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -37,7 +37,7 @@ public class ReservationService {
         return reservationRepository.findAll()
                 .stream()
                 .map(reservationMapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public ReservationResponseDTO findReservationById(Integer id) {
@@ -50,9 +50,7 @@ public class ReservationService {
         Employee employee = employeeRepository.findById(dto.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 
-        Set<Treatment> treatments = treatmentRepository.findAllById(dto.treatmentIds())
-                .stream()
-                .collect(Collectors.toSet());
+        Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
