@@ -1,7 +1,6 @@
 package com.snipit.backend.reservation;
 
 import com.snipit.backend.employee.Employee;
-import com.snipit.backend.reservation.ResourceNotFoundException;
 import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
