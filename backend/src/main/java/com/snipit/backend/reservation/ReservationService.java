@@ -67,12 +67,12 @@ public class ReservationService{
         Set<Treatment> treatments = treatmentRepository.findAllById(dto.treatmentIds())
             .stream().collect(Collectors.toSet());
 
-        Reservation r = reservationMapper.toEntity(dto);
-        r.setUser(user);
-        r.setEmployee(employee);
-        r.setTreatments(treatments);
+        Reservation reservation = reservationMapper.toEntity(dto);
+        reservation.setUser(user);
+        reservation.setEmployee(employee);
+        reservation.setTreatments(treatments);
 
-        return reservationMapper.toResponseDTO(reservationRepository.save(r));
+        return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
     }
     
     public ReservationResponseDTO update(Integer id, ReservationRequestDTO req) {
