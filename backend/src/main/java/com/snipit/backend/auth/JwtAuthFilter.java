@@ -10,6 +10,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.JwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +22,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String JWT_COOKIE_NAME = "access_token";
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     public JwtAuthFilter(JwtService jwtService, UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
@@ -54,7 +57,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
-            } catch (JwtException _) {
+            } catch (JwtException ex) {
+                logger.debug("Invalid JWT token in cookie: ", ex.getMessage());
             }
         }
 
