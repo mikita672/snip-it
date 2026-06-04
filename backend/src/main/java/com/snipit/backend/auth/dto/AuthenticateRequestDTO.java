@@ -2,8 +2,18 @@ package com.snipit.backend.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record AuthenticateRequestDTO(
-                @NotBlank @Email String email,
-                @NotBlank String password) {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthenticateRequestDTO {
+    @NotBlank
+    @Email
+    private String email;
+
+    @NotBlank
+    private String password;
 }
