@@ -21,7 +21,9 @@ public class SecurityConfiguration {
                                                                 "/v3/api-docs.yaml",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html",
-                                                                "/api/v1/auth/**")
+                                                                "/api/v1/auth/**",
+                                                                "/api/v1/treatment/preview",
+                                                                "/api/v1/employee/preview")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .build();
