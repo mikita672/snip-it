@@ -64,10 +64,11 @@ public class AuthController {
                                 .sameSite("Strict")
                                 .build();
 
-                return builder
-                                .header(HttpHeaders.SET_COOKIE, access.toString())
-                                .header(HttpHeaders.SET_COOKIE, refresh.toString())
-                                .build();
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.SET_COOKIE, access.toString());
+                headers.add(HttpHeaders.SET_COOKIE, refresh.toString());
+
+                return builder.headers(headers).build();
         }
 
         private ResponseEntity<Void> clearAuthCookies(ResponseEntity.HeadersBuilder<?> builder) {
@@ -87,9 +88,10 @@ public class AuthController {
                                 .maxAge(0)
                                 .build();
 
-                return builder
-                                .header(HttpHeaders.SET_COOKIE, access.toString())
-                                .header(HttpHeaders.SET_COOKIE, refresh.toString())
-                                .build();
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.SET_COOKIE, access.toString());
+                headers.add(HttpHeaders.SET_COOKIE, refresh.toString());
+
+                return builder.headers(headers).build();
         }
 }
