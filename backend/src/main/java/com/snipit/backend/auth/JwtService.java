@@ -24,6 +24,16 @@ public class JwtService {
         return extractClaim(jwt, Claims::getSubject);
     }
 
+    public Integer extractUserId(String jwt) {
+        return extractClaim(jwt, claims -> {
+            Object val = claims.get("userId");
+            if (val instanceof Integer) return (Integer) val;
+            if (val instanceof Number) return ((Number) val).intValue();
+            if (val instanceof String) return Integer.valueOf((String) val);
+            return null;
+        });
+    }
+
     private Claims extractAllClaims(String jwt) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())

@@ -5,7 +5,9 @@ import java.io.IOException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import com.snipit.backend.user.UserRepository;
+import com.snipit.backend.user.User;
+import static org.springframework.security.core.userdetails.User.builder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,12 +23,12 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String JWT_COOKIE_NAME = "access_token";
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
-    public JwtAuthFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -45,9 +47,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            Integer userId = jwtService.extractUserId(jwt);
+            if (userId == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            UserDetails userDetails = builder()
+                    .username(user.getEmail())
+                    .password(user.getPasswordHash())
+                    .roles(user.getIsAdmin() ? "ADMIN" : "USER")
+                    .build();
 
             try {
                 if (jwtService.isTokenValid(jwt, userDetails)) {

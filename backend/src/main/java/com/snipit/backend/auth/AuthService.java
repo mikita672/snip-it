@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import com.snipit.backend.auth.refreshTokens.RefreshTokenRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
@@ -38,7 +40,9 @@ public class AuthService {
                 .password(user.getPasswordHash())
                 .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                 .build();
-        String accessToken = jwtService.generateToken(userDetails);
+        Map<String, Object> extra = new HashMap<>();
+        extra.put("userId", user.getId());
+        String accessToken = jwtService.generateToken(extra, userDetails);
         String refreshToken = issueRefreshToken(user);
         return new AuthTokens(accessToken, refreshToken);
     }
@@ -52,7 +56,9 @@ public class AuthService {
                 .password(user.getPasswordHash())
                 .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                 .build();
-        String accessToken = jwtService.generateToken(userDetails);
+        Map<String, Object> extra = new HashMap<>();
+        extra.put("userId", user.getId());
+        String accessToken = jwtService.generateToken(extra, userDetails);
         String refreshToken = issueRefreshToken(user);
         return new AuthTokens(accessToken, refreshToken);
     }
@@ -65,11 +71,13 @@ public class AuthService {
         refreshTokenRepository.delete(stored);
 
         User user = stored.getUser();
-        String newAccess = jwtService.generateToken(builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
-                .build());
+        Map<String, Object> extra = new HashMap<>();
+        extra.put("userId", user.getId());
+        String newAccess = jwtService.generateToken(extra, builder()
+            .username(user.getEmail())
+            .password(user.getPasswordHash())
+            .roles(user.getIsAdmin() ? "ADMIN" : "USER")
+            .build());
         String newRefresh = issueRefreshToken(user);
         return new AuthTokens(newAccess, newRefresh);
     }
