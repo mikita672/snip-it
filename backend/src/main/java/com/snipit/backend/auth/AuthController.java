@@ -25,13 +25,13 @@ public class AuthController {
 
         @PostMapping("/sign-up")
         public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {
-                AuthTokens tokens = service.register(request);
+                AuthTokens tokens = service.register(request.getEmail(), request.getPassword());
                 return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
         @PostMapping("/sign-in")
         public ResponseEntity<Void> authenticate(@Valid @RequestBody AuthenticateRequestDTO request) {
-                AuthTokens tokens = service.authenticate(request);
+                AuthTokens tokens = service.authenticate(request.getEmail(), request.getPassword());
                 return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
@@ -50,10 +50,19 @@ public class AuthController {
         }
 
         private ResponseEntity<Void> withAuthCookies(AuthTokens tokens, ResponseEntity.HeadersBuilder<?> builder) {
-                ResponseCookie access = ResponseCookie.from(ACCESS_COOKIE, tokens.accessToken())
-                                .httpOnly(true).secure(false).path("/").sameSite("Strict").build();
+                ResponseCookie access = ResponseCookie
+                                .from(ACCESS_COOKIE, tokens.accessToken())
+                                .httpOnly(true)
+                                .secure(false)
+                                .path("/")
+                                .sameSite("Strict")
+                                .build();
                 ResponseCookie refresh = ResponseCookie.from(REFRESH_COOKIE, tokens.refreshToken())
-                                .httpOnly(true).secure(false).path("/api/v1/auth/refresh").sameSite("Strict").build();
+                                .httpOnly(true)
+                                .secure(false)
+                                .path("/api/v1/auth/refresh")
+                                .sameSite("Strict")
+                                .build();
 
                 return builder
                                 .header(HttpHeaders.SET_COOKIE, access.toString())
@@ -62,10 +71,20 @@ public class AuthController {
         }
 
         private ResponseEntity<Void> clearAuthCookies(ResponseEntity.HeadersBuilder<?> builder) {
-                ResponseCookie access = ResponseCookie.from(ACCESS_COOKIE, "")
-                                .httpOnly(true).secure(false).path("/").sameSite("Strict").maxAge(0).build();
+                ResponseCookie access = ResponseCookie
+                                .from(ACCESS_COOKIE, "")
+                                .httpOnly(true)
+                                .secure(false)
+                                .path("/")
+                                .sameSite("Strict")
+                                .maxAge(0)
+                                .build();
                 ResponseCookie refresh = ResponseCookie.from(REFRESH_COOKIE, "")
-                                .httpOnly(true).secure(false).path("/api/v1/auth/refresh").sameSite("Strict").maxAge(0)
+                                .httpOnly(true)
+                                .secure(false)
+                                .path("/api/v1/auth/refresh")
+                                .sameSite("Strict")
+                                .maxAge(0)
                                 .build();
 
                 return builder

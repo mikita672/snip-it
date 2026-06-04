@@ -13,8 +13,6 @@ import java.util.Base64;
 import com.snipit.backend.auth.refreshTokens.RefreshTokenRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
-import com.snipit.backend.auth.dto.AuthenticateRequestDTO;
-import com.snipit.backend.auth.dto.RegisterRequestDTO;
 import com.snipit.backend.auth.refreshTokens.RefreshToken;
 import lombok.RequiredArgsConstructor;
 
@@ -28,10 +26,10 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthProperties authProperties;
 
-    public AuthTokens register(RegisterRequestDTO request) {
+    public AuthTokens register(String email, String password) {
         User user = new User();
-        user.setEmail(request.email());
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode(password));
         user.setIsAdmin(false);
         repository.save(user);
 
@@ -45,10 +43,10 @@ public class AuthService {
         return new AuthTokens(accessToken, refreshToken);
     }
 
-    public AuthTokens authenticate(AuthenticateRequestDTO request) {
+    public AuthTokens authenticate(String email, String password) {
         authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
-        User user = repository.findByEmail(request.email()).orElseThrow();
+                .authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        User user = repository.findByEmail(email).orElseThrow();
         UserDetails userDetails = builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
