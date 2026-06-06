@@ -31,7 +31,8 @@ public class SecurityConfiguration {
                                                                 "/api/v1/auth/**",
                                                                 "/api/v1/treatment/preview",
                                                                 "/api/v1/employee/preview",
-                                                                "/api/v1/availability")
+                                                                "/api/v1/availability",
+                                                                "/api/v1/availability/employees")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .build();

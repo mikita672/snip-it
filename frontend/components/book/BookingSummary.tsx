@@ -1,25 +1,35 @@
 import { Separator } from '@/components/ui/separator'
 import { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
+import { AvailableEmployee } from './EmployeeSelector'
+
+type Step = 'treatments' | 'time' | 'employee'
 
 interface Props {
     selectedTreatments: TreatmentPreview[]
     selectedTime?: string
-    step: 'treatments' | 'time'
+    selectedEmployee?: AvailableEmployee | null
+    step: Step
     onContinue: () => void
 }
 
-export default function BookingSummary({ selectedTreatments, selectedTime, step, onContinue }: Props) {
+export default function BookingSummary({ selectedTreatments, selectedTime, selectedEmployee, step, onContinue }: Props) {
     const totalPrice = selectedTreatments.reduce((sum, t) => sum + t.price, 0)
     const totalMinDuration = selectedTreatments.reduce((sum, t) => sum + t.minDurationMinutes, 0)
     const totalMaxDuration = selectedTreatments.reduce((sum, t) => sum + t.maxDurationMinutes, 0)
 
-    const canContinue = step === 'treatments'
-        ? selectedTreatments.length > 0
-        : !!selectedTime
+    const canContinue =
+        step === 'treatments' ? selectedTreatments.length > 0 :
+        step === 'time' ? !!selectedTime :
+        !!selectedEmployee
 
     const formattedTime = selectedTime
         ? new Date(selectedTime).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
         : null
+
+    const buttonLabel =
+        step === 'treatments' ? `Continue (${selectedTreatments.length} selected)` :
+        step === 'time' ? 'Confirm time' :
+        'Confirm booking'
 
     return (
         <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 h-fit sticky top-6">
@@ -64,12 +74,23 @@ export default function BookingSummary({ selectedTreatments, selectedTime, step,
                         </>
                     )}
 
+                    {selectedEmployee && (
+                        <>
+                            <Separator />
+                            <div className="flex flex-col gap-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-widest">Specialist</p>
+                                <p className="text-sm font-semibold">{selectedEmployee.firstName} {selectedEmployee.lastName}</p>
+                                <p className="text-xs text-muted-foreground">{selectedEmployee.position}</p>
+                            </div>
+                        </>
+                    )}
+
                     <button
                         disabled={!canContinue}
                         onClick={onContinue}
                         className="w-full bg-primary text-primary-foreground rounded-xl py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        {step === 'treatments' ? `Continue (${selectedTreatments.length} selected)` : 'Confirm time'}
+                        {buttonLabel}
                     </button>
                 </>
             )}

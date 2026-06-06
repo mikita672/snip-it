@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -24,5 +25,12 @@ public class AvailabilityController {
             @RequestParam List<Integer> treatmentIds,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return availabilityService.getAvailableSlots(treatmentIds, date);
+    }
+
+    @GetMapping("/employees")
+    public List<AvailableEmployeeDTO> getAvailableEmployees(
+            @RequestParam List<Integer> treatmentIds,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime) {
+        return availabilityService.getAvailableEmployees(treatmentIds, dateTime);
     }
 }
