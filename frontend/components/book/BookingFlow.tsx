@@ -39,6 +39,7 @@ export default function BookingFlow({ treatments }: Props) {
                     <TreatmentSelector treatments={treatments} selected={selected} onToggle={toggle} />
                 ) : (
                     <TimeSelector
+                        treatmentIds={[...selected]}
                         onBack={() => setStep('treatments')}
                         onSelect={setSelectedTime}
                     />
