@@ -1,0 +1,7 @@
+auth:
+  jwt:
+    secret: "your-very-long-base64-encoded-secret-here"
+    expiration-time: 15m
+    issuer: snip-it
+  refresh-token:
+    expiration-time: 7d
