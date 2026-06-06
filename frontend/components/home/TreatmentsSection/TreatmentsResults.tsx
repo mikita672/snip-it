@@ -2,13 +2,14 @@ import { Item, ItemContent, ItemDescription, ItemFooter, ItemTitle } from '../..
 import { ClockIcon } from 'lucide-react';
 import TreatmentsPagination from './TreatmentsPagination';
 import { TreatmentsPreviewPage } from '@/types/treatment/TreatmentsPreviewPage';
+import { serverFetch } from '@/lib/fetch';
 
 interface Props {
 	params: URLSearchParams;
 }
 
 async function TreatmentsResults({ params }: Props) {
-	const response = await fetch(`${process.env.API_URL}/treatment/preview?${params.toString()}`, {
+	const response = await serverFetch(`/api/treatment/preview?${params.toString()}`, {
 		method: "GET",
 	});
 

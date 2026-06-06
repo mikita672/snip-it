@@ -1,13 +1,15 @@
 import { EmployeePreview } from "@/types/employee/EmployeePreview";
 import { Item, ItemContent, ItemDescription, ItemFooter, ItemTitle } from "../ui/item";
 import { Badge } from "../ui/badge";
+import { serverFetch } from "@/lib/fetch";
 
 async function EmployeesSection() {
-	const response = await fetch(`${process.env.API_URL}/employee/preview`, {
+	const response = await serverFetch('/api/employee/preview', {
 		method: "GET",
 	});
 
 	if (!response.ok) {
+		console.log(response);
 		return <p className="col-span-5 text-center font-bold">Failed to parse employees</p>
 	}
 
