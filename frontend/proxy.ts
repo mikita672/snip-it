@@ -3,39 +3,50 @@ import { NextRequest, NextResponse } from "next/server";
 export const proxy = async (request: NextRequest) => {
     const endpoint = request.nextUrl.pathname.replace('/api', '');
     const url = `${process.env.API_URL}${endpoint}`;
-    const method = request.method;
-    const headers = request.headers;
-    const body = method === "GET" || method === "HEAD" ? undefined : await request.text();
 
-    const response = await fetch(url, { method, headers, body });
+    const requestBody = request.method === "GET" || request.method === "HEAD"
+        ? undefined
+        : await request.text();
+
+    const response = await fetch(url, {
+        method: request.method,
+        headers: request.headers,
+        body: requestBody
+    });
+
     if (response.status !== 401) {
-        return NextResponse.json(await response.json(), { status: response.status });
+        return new NextResponse(response.body, {
+            status: response.status,
+            headers: new Headers(response.headers),
+        });
     }
 
-    const refreshResponse = await fetch(`${process.env.API_URL}/auth/refresh`, {
+    const refresh = await fetch(`${process.env.API_URL}/auth/refresh`, {
         method: "POST",
-        headers,
+        headers: request.headers
     });
-    if (!refreshResponse.ok) {
+
+    if (!refresh.ok) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
-    const newCookies = refreshResponse.headers.getSetCookie();
-    const retryHeaders = new Headers(headers);
-    retryHeaders.set('Cookie', newCookies.join(';'));
+
+    const newCookies = refresh.headers.getSetCookie();
+    const retryHeaders = new Headers(request.headers);
+    retryHeaders.set('Cookie', newCookies.join('; '));
 
     const retryResponse = await fetch(url, {
-        method,
+        method: request.method,
         headers: retryHeaders,
-        body,
+        body: requestBody
     });
 
-    const finalResponse = NextResponse.json(
-        await retryResponse.json(), {
+    const finalResponse = new NextResponse(retryResponse.body, {
         status: retryResponse.status,
+        headers: new Headers(retryResponse.headers),
     });
 
     newCookies.forEach((cookie) => {
-        finalResponse.headers.append('Set-Cookie', cookie)
+        finalResponse.headers.append('Set-Cookie', cookie);
     });
 
     return finalResponse;

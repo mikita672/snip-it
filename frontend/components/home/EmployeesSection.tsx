@@ -9,7 +9,6 @@ async function EmployeesSection() {
 	});
 
 	if (!response.ok) {
-		console.log(response);
 		return <p className="col-span-5 text-center font-bold">Failed to parse employees</p>
 	}
 

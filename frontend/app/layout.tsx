@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Header from "@/components/header/Header";
 import { ThemeProvider } from "next-themes";
 import Footer from "@/components/Footer";
+import { Toaster } from "@/components/Toaster";
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -47,6 +48,8 @@ export default function RootLayout({
                         </div>
                         <Footer />
                     </div>
+
+                    <Toaster />
                 </ThemeProvider>
             </body>
         </html>
