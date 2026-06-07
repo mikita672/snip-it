@@ -141,7 +141,7 @@ function Login() {
                     >Log in</Button>
 
                     <div className="flex flex-col gap-2 items-center">
-                        <Link href="/register" className="underline">Don't have an account?</Link>
+                        <Link href="/register" className="underline">Don&apos;t have an account?</Link>
                     </div>
                 </CardFooter>
             </Card>
