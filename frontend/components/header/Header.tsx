@@ -3,6 +3,7 @@ import { Bodoni_Moda } from 'next/font/google'
 import Link from 'next/link'
 import ThemeSelection from './ThemeSelection'
 import UserMenu from './UserMenu'
+import { cookies } from 'next/headers'
 
 const bodoni = Bodoni_Moda({
 	subsets: ['latin'],
@@ -10,7 +11,20 @@ const bodoni = Bodoni_Moda({
 	style: 'italic',
 });
 
-function Header() {
+async function Header() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('access_token')?.value;
+    let email = null;
+    if (token) {
+        try {
+            const base64Payload = token.split('.')[1];
+            const payload = Buffer.from(base64Payload, 'base64').toString('utf-8');
+            email = JSON.parse(payload).sub;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
 	return (
 		<div className="py-3 px-4 md:px-24 flex justify-between items-center border-b">
 			<Link href="/">
@@ -38,7 +52,7 @@ function Header() {
 
 				<ThemeSelection />
 
-				<UserMenu />
+				<UserMenu email={email} />
 			</div>
 		</div>
 	)
