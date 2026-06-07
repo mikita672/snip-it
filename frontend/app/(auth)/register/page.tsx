@@ -12,6 +12,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "
 import { EyeClosedIcon, EyeIcon } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
     email: z.email("Must be a valid email"),
@@ -37,6 +38,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 function Register() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
     const form = useForm<FormSchema>({
@@ -63,6 +65,8 @@ function Register() {
 
         if (response.ok) {
             toast.success("Registered successfully");
+            router.push("/");
+            router.refresh();
         } else {
             console.log(response);
             toast.error("Failed to register");

@@ -16,14 +16,7 @@ import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
     email: z.email("Must be a valid email"),
-    password: z.string()
-        .nonempty("Password is required")
-        .min(8, "Password should be at least 8 characters long")
-        .max(24, "Password should be no longer than 24 characters")
-        .regex(/[a-z]/, "Password must include at least 1 lowercase character")
-        .regex(/[A-Z]/, "Password must include at least 1 uppercase character")
-        .regex(/[0-9]/, "Password must include at least 1 digit")
-        .regex(/[^a-zA-Z0-9]/, "Password must include at least 1 special character"),
+    password: z.string().nonempty("Password is required"),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
