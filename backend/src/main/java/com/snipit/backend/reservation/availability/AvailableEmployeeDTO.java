@@ -1,4 +1,4 @@
-package com.snipit.backend.availability;
+package com.snipit.backend.reservation.availability;
 
 public record AvailableEmployeeDTO(
         Integer id,

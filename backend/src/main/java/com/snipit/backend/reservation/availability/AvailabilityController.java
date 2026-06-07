@@ -1,4 +1,4 @@
-package com.snipit.backend.availability;
+package com.snipit.backend.reservation.availability;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.snipit.backend.availability;
+package com.snipit.backend.reservation.availability;
 
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.employee.EmployeeRepository;
