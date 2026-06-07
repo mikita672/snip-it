@@ -2,22 +2,33 @@
 
 import Link from "next/link"
 import { Button } from "../ui/button"
-import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ClipboardClockIcon, LogOut, SquareChevronDownIcon, UserIcon, UserPenIcon } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-function UserMenu() {
-	const [user, setUser] = useState(false);
+function UserMenu({ email }: { email?: string | null }) {
+    const router = useRouter();
 
-	if (user) {
+    const handleLogout = async () => {
+        const response = await fetch('/api/auth/logout', { method: 'POST' });
+        if (response.ok) {
+            toast.success("Logged out successfully");
+            router.refresh();
+        } else {
+            toast.error("Failed to log out");
+        }
+    }
+
+	if (email) {
 		return (
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<div className="flex items-center gap-2 cursor-pointer">
 						<UserIcon />
 						<div className="flex gap-1 items-center">
-							<p>user@user.me</p>
+							<p>{email}</p>
 							<SquareChevronDownIcon size={20} />
 						</div>
 					</div>
@@ -40,7 +51,7 @@ function UserMenu() {
 					<DropdownMenuItem
 						className="cursor-pointer flex gap-2 items-center"
 						variant="destructive"
-						onClick={() => setUser(false)}
+						onClick={handleLogout}
 					>
 						<LogOut />
 						<p>Logout</p>
@@ -51,9 +62,9 @@ function UserMenu() {
 	}
 
 	return (
-		// <Link href="/login">
-		<Button className="cursor-pointer" onClick={() => setUser(true)}>Login</Button>
-		// </Link>
+		<Link href="/login">
+		    <Button className="cursor-pointer">Login</Button>
+		</Link>
 	)
 }
 
