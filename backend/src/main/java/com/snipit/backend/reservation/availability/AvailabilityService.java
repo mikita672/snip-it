@@ -13,10 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AvailabilityService {
@@ -41,14 +39,12 @@ public class AvailabilityService {
         List<Integer> employeeIds = employeeRepository.findEmployeeIdsByAllTreatments(treatmentIds, treatmentIds.size());
         if (employeeIds.isEmpty()) return List.of();
 
-        List<Employee> employees = employeeRepository.findWithSchedulesByIds(employeeIds);
-
-        int sumDuration = treatmentRepository.findAllById(treatmentIds)
-                .stream()
-                .mapToInt(Treatment::getMinDurationMinutes)
-                .sum();
-
+        int sumDuration = sumDuration(treatmentIds);
         int dayOfWeek = date.getDayOfWeek().getValue();
+
+        List<Employee> employees = employeeRepository.findWithSchedulesByIds(employeeIds);
+        Map<Integer, List<Reservation>> reservationsByEmployee = fetchReservationsByEmployee(employeeIds, date);
+
         Set<LocalTime> availableSlots = new TreeSet<>();
 
         for (Employee employee : employees) {
@@ -56,11 +52,7 @@ public class AvailabilityService {
                     .filter(s -> s.getDayOfWeek().equals(dayOfWeek))
                     .findFirst()
                     .ifPresent(schedule -> {
-                        LocalDateTime startOfDay = date.atStartOfDay();
-                        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
-                        List<Reservation> reservations = reservationRepository.findByEmployeeIdAndDate(
-                                employee.getId(), startOfDay, endOfDay);
-
+                        List<Reservation> reservations = reservationsByEmployee.getOrDefault(employee.getId(), List.of());
                         for (LocalTime slot : generateSlots(schedule.getStartTime(), schedule.getEndTime(), sumDuration)) {
                             if (!isBlocked(slot, sumDuration, reservations)) {
                                 availableSlots.add(slot);
@@ -74,6 +66,44 @@ public class AvailabilityService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<AvailableEmployeeDTO> getAvailableEmployees(List<Integer> treatmentIds, LocalDateTime dateTime) {
+        List<Integer> employeeIds = employeeRepository.findEmployeeIdsByAllTreatments(treatmentIds, treatmentIds.size());
+        if (employeeIds.isEmpty()) return List.of();
+
+        int sumDuration = sumDuration(treatmentIds);
+        int dayOfWeek = dateTime.getDayOfWeek().getValue();
+        LocalTime requestedTime = dateTime.toLocalTime();
+
+        List<Employee> employees = employeeRepository.findWithSchedulesByIds(employeeIds);
+        Map<Integer, List<Reservation>> reservationsByEmployee = fetchReservationsByEmployee(employeeIds, dateTime.toLocalDate());
+
+        return employees.stream()
+                .filter(e -> e.getSchedules().stream()
+                        .filter(s -> s.getDayOfWeek().equals(dayOfWeek))
+                        .anyMatch(s -> !requestedTime.isBefore(s.getStartTime())
+                                && !requestedTime.plusMinutes(sumDuration).isAfter(s.getEndTime())))
+                .filter(e -> !isBlocked(requestedTime, sumDuration,
+                        reservationsByEmployee.getOrDefault(e.getId(), List.of())))
+                .map(e -> new AvailableEmployeeDTO(e.getId(), e.getFirstName(), e.getLastName(), e.getPosition()))
+                .toList();
+    }
+
+    private Map<Integer, List<Reservation>> fetchReservationsByEmployee(List<Integer> employeeIds, LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        return reservationRepository.findByEmployeeIdsAndDate(employeeIds, startOfDay, endOfDay)
+                .stream()
+                .collect(Collectors.groupingBy(r -> r.getEmployee().getId()));
+    }
+
+    private int sumDuration(List<Integer> treatmentIds) {
+        return treatmentRepository.findAllById(treatmentIds)
+                .stream()
+                .mapToInt(Treatment::getMinDurationMinutes)
+                .sum();
+    }
+
     private List<LocalTime> generateSlots(LocalTime start, LocalTime end, int durationMinutes) {
         List<LocalTime> slots = new ArrayList<>();
         LocalTime current = start;
@@ -84,59 +114,12 @@ public class AvailabilityService {
         return slots;
     }
 
-    @Transactional(readOnly = true)
-    public List<AvailableEmployeeDTO> getAvailableEmployees(List<Integer> treatmentIds, LocalDateTime dateTime) {
-        List<Integer> employeeIds = employeeRepository.findEmployeeIdsByAllTreatments(treatmentIds, treatmentIds.size());
-        if (employeeIds.isEmpty()) return List.of();
-
-        List<Employee> employees = employeeRepository.findWithSchedulesByIds(employeeIds);
-
-        int sumDuration = treatmentRepository.findAllById(treatmentIds)
-                .stream()
-                .mapToInt(Treatment::getMinDurationMinutes)
-                .sum();
-
-        int dayOfWeek = dateTime.getDayOfWeek().getValue();
-        LocalTime requestedTime = dateTime.toLocalTime();
-        LocalDate date = dateTime.toLocalDate();
-
-        List<AvailableEmployeeDTO> result = new ArrayList<>();
-
-        for (Employee employee : employees) {
-            boolean coversSlot = employee.getSchedules().stream()
-                    .filter(s -> s.getDayOfWeek().equals(dayOfWeek))
-                    .anyMatch(s -> !requestedTime.isBefore(s.getStartTime())
-                            && !requestedTime.plusMinutes(sumDuration).isAfter(s.getEndTime()));
-
-            if (!coversSlot) continue;
-
-            LocalDateTime startOfDay = date.atStartOfDay();
-            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
-            List<Reservation> reservations = reservationRepository.findByEmployeeIdAndDate(
-                    employee.getId(), startOfDay, endOfDay);
-
-            if (!isBlocked(requestedTime, sumDuration, reservations)) {
-                result.add(new AvailableEmployeeDTO(
-                        employee.getId(),
-                        employee.getFirstName(),
-                        employee.getLastName(),
-                        employee.getPosition()));
-            }
-        }
-
-        return result;
-    }
-
     private boolean isBlocked(LocalTime slot, int durationMinutes, List<Reservation> reservations) {
         LocalTime slotEnd = slot.plusMinutes(durationMinutes);
-        for (Reservation r : reservations) {
+        return reservations.stream().anyMatch(r -> {
             LocalTime resStart = r.getReservationTime().toLocalTime();
-            int resDuration = r.getSumDuration() != null ? r.getSumDuration() : 0;
-            LocalTime resEnd = resStart.plusMinutes(resDuration);
-            if (slot.isBefore(resEnd) && slotEnd.isAfter(resStart)) {
-                return true;
-            }
-        }
-        return false;
+            LocalTime resEnd = resStart.plusMinutes(r.getSumDuration() != null ? r.getSumDuration() : 0);
+            return slot.isBefore(resEnd) && slotEnd.isAfter(resStart);
+        });
     }
 }

@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 
-	@Query("SELECT r FROM Reservation r WHERE r.employee.id = :employeeId AND r.reservationTime >= :startOfDay AND r.reservationTime < :endOfDay")
-	List<Reservation> findByEmployeeIdAndDate(@Param("employeeId") Integer employeeId,
-	                                          @Param("startOfDay") LocalDateTime startOfDay,
-	                                          @Param("endOfDay") LocalDateTime endOfDay);
+	@Query("SELECT r FROM Reservation r JOIN FETCH r.employee WHERE r.employee.id IN :employeeIds AND r.reservationTime >= :startOfDay AND r.reservationTime < :endOfDay")
+	List<Reservation> findByEmployeeIdsAndDate(@Param("employeeIds") List<Integer> employeeIds,
+	                                           @Param("startOfDay") LocalDateTime startOfDay,
+	                                           @Param("endOfDay") LocalDateTime endOfDay);
 }
