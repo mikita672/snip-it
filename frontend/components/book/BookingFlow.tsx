@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
 import TreatmentSelector from './TreatmentSelector'
 import BookingSummary from './BookingSummary'
@@ -14,10 +16,12 @@ interface Props {
 }
 
 export default function BookingFlow({ treatments }: Props) {
+    const router = useRouter()
     const [step, setStep] = useState<Step>('treatments')
     const [selected, setSelected] = useState<Set<number>>(new Set())
     const [selectedTime, setSelectedTime] = useState<string>('')
     const [selectedEmployee, setSelectedEmployee] = useState<AvailableEmployee | null>(null)
+    const [loading, setLoading] = useState(false)
 
     function toggle(id: number) {
         setSelected(prev => {
@@ -27,10 +31,31 @@ export default function BookingFlow({ treatments }: Props) {
         })
     }
 
-    function handleContinue() {
-        if (step === 'treatments') setStep('time')
-        else if (step === 'time') setStep('employee')
-        else console.log('Confirm booking:', { treatmentIds: [...selected], reservationTime: selectedTime, employeeId: selectedEmployee?.id })
+    async function handleContinue() {
+        if (step === 'treatments') { setStep('time'); return }
+        if (step === 'time') { setStep('employee'); return }
+
+        setLoading(true)
+        try {
+            const response = await fetch('/api/reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    employeeId: selectedEmployee!.id,
+                    reservationTime: selectedTime,
+                    treatmentIds: [...selected],
+                }),
+            })
+
+            if (!response.ok) throw new Error()
+
+            toast.success('Booking confirmed!')
+            router.push('/')
+        } catch {
+            toast.error('Failed to confirm booking. Please try again.')
+        } finally {
+            setLoading(false)
+        }
     }
 
     const selectedTreatments = treatments.filter(t => selected.has(t.id))
@@ -64,6 +89,7 @@ export default function BookingFlow({ treatments }: Props) {
                     selectedEmployee={selectedEmployee}
                     step={step}
                     onContinue={handleContinue}
+                    loading={loading}
                 />
             </div>
         </div>

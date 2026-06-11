@@ -10,9 +10,10 @@ interface Props {
     selectedEmployee?: AvailableEmployee | null
     step: Step
     onContinue: () => void
+    loading?: boolean
 }
 
-export default function BookingSummary({ selectedTreatments, selectedTime, selectedEmployee, step, onContinue }: Props) {
+export default function BookingSummary({ selectedTreatments, selectedTime, selectedEmployee, step, onContinue, loading }: Props) {
     const totalPrice = selectedTreatments.reduce((sum, t) => sum + t.price, 0)
     const totalMinDuration = selectedTreatments.reduce((sum, t) => sum + t.minDurationMinutes, 0)
     const totalMaxDuration = selectedTreatments.reduce((sum, t) => sum + t.maxDurationMinutes, 0)
@@ -86,11 +87,11 @@ export default function BookingSummary({ selectedTreatments, selectedTime, selec
                     )}
 
                     <button
-                        disabled={!canContinue}
+                        disabled={!canContinue || loading}
                         onClick={onContinue}
                         className="w-full bg-primary text-primary-foreground rounded-xl py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        {buttonLabel}
+                        {loading ? 'Confirming…' : buttonLabel}
                     </button>
                 </>
             )}
