@@ -59,6 +59,7 @@ public class ReservationService {
         reservation.setEmployee(employee);
         reservation.setTreatments(treatments);
         reservation.setSumDuration(sumDuration);
+        reservation.setStatus("Pending confirmation");
 
         return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
     }
