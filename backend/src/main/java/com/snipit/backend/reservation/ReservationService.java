@@ -10,6 +10,7 @@ import com.snipit.backend.treatment.TreatmentRepository;
 import com.snipit.backend.user.User;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,7 +55,8 @@ public class ReservationService {
         return reservationMapper.toResponseDTO(reservation);
     }
 
-    public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User user) {
+    @Transactional
+    public synchronized ReservationResponseDTO createReservation(ReservationRequestDTO dto, User user) {
         Employee employee = employeeRepository.findById(dto.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 

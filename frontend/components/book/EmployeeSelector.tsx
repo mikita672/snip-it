@@ -29,7 +29,7 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
         treatmentIds.forEach(id => params.append('treatmentIds', String(id)))
         params.set('dateTime', selectedTime)
 
-        fetch(`/api/availability/employees?${params.toString()}`)
+        fetch(`/api/availability/employees?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
                 if (!res.ok) throw new Error()
                 return res.json() as Promise<AvailableEmployee[]>

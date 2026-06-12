@@ -43,7 +43,7 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
                 params.set('startDate', toISODate(start))
                 params.set('endDate', toISODate(end))
 
-                const res = await fetch(`/api/availability/days?${params.toString()}`)
+                const res = await fetch(`/api/availability/days?${params.toString()}`, { cache: 'no-store' })
                 if (res.ok) {
                     const days = await res.json() as string[]
                     setAvailableDays(new Set(days))
@@ -70,7 +70,7 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
         treatmentIds.forEach(id => params.append('treatmentIds', String(id)))
         params.set('date', dateStr)
 
-        fetch(`/api/availability?${params.toString()}`)
+        fetch(`/api/availability?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
                 if (!res.ok) throw new Error()
                 return res.json() as Promise<string[]>

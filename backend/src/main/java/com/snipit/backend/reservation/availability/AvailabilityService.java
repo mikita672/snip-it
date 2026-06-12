@@ -118,11 +118,18 @@ public class AvailabilityService {
                 .collect(Collectors.groupingBy(r -> r.getEmployee().getId()));
     }
 
+    private int getRoundedDuration(int durationMinutes) {
+        if (durationMinutes == 0) return 0;
+        int slots = (int) Math.ceil((double) durationMinutes / SLOT_INTERVAL_MINUTES);
+        return slots * SLOT_INTERVAL_MINUTES;
+    }
+
     private int sumDuration(List<Integer> treatmentIds) {
-        return treatmentRepository.findAllById(treatmentIds)
+        int exactDuration = treatmentRepository.findAllById(treatmentIds)
                 .stream()
                 .mapToInt(Treatment::getDurationMinutes)
                 .sum();
+        return getRoundedDuration(exactDuration);
     }
 
     private List<LocalTime> generateSlots(LocalTime start, LocalTime end, int durationMinutes) {
@@ -136,11 +143,17 @@ public class AvailabilityService {
     }
 
     private boolean isBlocked(LocalTime slot, int durationMinutes, List<Reservation> reservations) {
-        LocalTime slotEnd = slot.plusMinutes(durationMinutes);
-        return reservations.stream().anyMatch(r -> {
-            LocalTime resStart = r.getReservationTime().toLocalTime();
-            LocalTime resEnd = resStart.plusMinutes(r.getSumDuration() != null ? r.getSumDuration() : 0);
-            return slot.isBefore(resEnd) && slotEnd.isAfter(resStart);
-        });
+        int start1 = slot.toSecondOfDay() / 60;
+        int end1 = start1 + durationMinutes;
+
+        return reservations.stream()
+                .filter(r -> !"Cancelled".equalsIgnoreCase(r.getStatus()) && !"Rejected".equalsIgnoreCase(r.getStatus()))
+                .anyMatch(r -> {
+                    int start2 = r.getReservationTime().toLocalTime().toSecondOfDay() / 60;
+                    int rDuration = r.getSumDuration() != null ? r.getSumDuration() : 0;
+                    int end2 = start2 + getRoundedDuration(rDuration);
+                    
+                    return start1 < end2 && start2 < end1;
+                });
     }
 }
