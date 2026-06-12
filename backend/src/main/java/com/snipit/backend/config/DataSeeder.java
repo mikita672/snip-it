@@ -2,20 +2,32 @@ package com.snipit.backend.config;
 
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.employee.EmployeeRepository;
+import com.snipit.backend.reservation.Reservation;
+import com.snipit.backend.reservation.ReservationRepository;
 import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.treatment.TreatmentRepository;
+import com.snipit.backend.user.User;
+import com.snipit.backend.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 public class DataSeeder {
 
     @Bean
-    CommandLineRunner initDatabase(TreatmentRepository treatmentRepository, EmployeeRepository employeeRepository) {
+    CommandLineRunner initDatabase(
+            TreatmentRepository treatmentRepository, 
+            EmployeeRepository employeeRepository,
+            UserRepository userRepository,
+            ReservationRepository reservationRepository,
+            PasswordEncoder passwordEncoder) {
         return args -> {
             if (treatmentRepository.count() == 0 && employeeRepository.count() == 0) {
                 Treatment t1 = new Treatment();
@@ -101,6 +113,31 @@ public class DataSeeder {
                 e4.setTreatments(List.of(t1, t2, t6, t7));
 
                 employeeRepository.saveAll(List.of(e1, e2, e3, e4));
+
+                User user = new User();
+                user.setEmail("client@example.com");
+                user.setFirstName("Demo");
+                user.setLastName("Client");
+                user.setPasswordHash(passwordEncoder.encode("password"));
+                userRepository.save(user);
+
+                Reservation r1 = new Reservation();
+                r1.setUser(user);
+                r1.setEmployee(e2);
+                r1.setReservationTime(LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0));
+                r1.setStatus("Pending");
+                r1.setTreatments(Set.of(t5, t6));
+                r1.setSumDuration(t5.getDurationMinutes() + t6.getDurationMinutes());
+                
+                Reservation r2 = new Reservation();
+                r2.setUser(user);
+                r2.setEmployee(e4);
+                r2.setReservationTime(LocalDateTime.now().minusDays(15).withHour(10).withMinute(0).withSecond(0).withNano(0));
+                r2.setStatus("Completed");
+                r2.setTreatments(Set.of(t2, t6));
+                r2.setSumDuration(t2.getDurationMinutes() + t6.getDurationMinutes());
+
+                reservationRepository.saveAll(List.of(r1, r2));
             }
         };
     }
