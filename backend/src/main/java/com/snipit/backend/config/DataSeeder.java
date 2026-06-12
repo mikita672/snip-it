@@ -2,6 +2,7 @@ package com.snipit.backend.config;
 
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.employee.EmployeeRepository;
+import com.snipit.backend.employee.EmployeeSchedule;
 import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.treatment.TreatmentRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.List;
 
 @Configuration
@@ -75,6 +77,7 @@ public class DataSeeder {
                 e1.setEmail("john.doe@snipit.com");
                 e1.setPhone("+1234567890");
                 e1.setTreatments(List.of(t1, t3, t7));
+                addSchedule(e1, LocalTime.of(9, 0), LocalTime.of(17, 0));
 
                 Employee e2 = new Employee();
                 e2.setFirstName("Jane");
@@ -83,6 +86,7 @@ public class DataSeeder {
                 e2.setEmail("jane.smith@snipit.com");
                 e2.setPhone("+1987654321");
                 e2.setTreatments(List.of(t2, t4, t5, t6, t8));
+                addSchedule(e2, LocalTime.of(8, 0), LocalTime.of(16, 0));
 
                 Employee e3 = new Employee();
                 e3.setFirstName("Mike");
@@ -91,6 +95,7 @@ public class DataSeeder {
                 e3.setEmail("mike.j@snipit.com");
                 e3.setPhone("+1122334455");
                 e3.setTreatments(List.of(t1, t3, t7));
+                addSchedule(e3, LocalTime.of(10, 0), LocalTime.of(18, 0));
 
                 Employee e4 = new Employee();
                 e4.setFirstName("Emily");
@@ -99,9 +104,21 @@ public class DataSeeder {
                 e4.setEmail("emily.d@snipit.com");
                 e4.setPhone("+1555666777");
                 e4.setTreatments(List.of(t1, t2, t6, t7));
+                addSchedule(e4, LocalTime.of(9, 0), LocalTime.of(17, 0));
 
                 employeeRepository.saveAll(List.of(e1, e2, e3, e4));
             }
         };
+    }
+
+    private void addSchedule(Employee employee, LocalTime startTime, LocalTime endTime) {
+        for (int i = 1; i <= 5; i++) {
+            EmployeeSchedule schedule = new EmployeeSchedule();
+            schedule.setEmployee(employee);
+            schedule.setDayOfWeek(i);
+            schedule.setStartTime(startTime);
+            schedule.setEndTime(endTime);
+            employee.getSchedules().add(schedule);
+        }
     }
 }

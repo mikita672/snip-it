@@ -112,12 +112,47 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
                         />
                     )}
                     {step === 'confirm' && (
-                        <div className="flex flex-col gap-4 bg-card border rounded-2xl p-6">
-                            <h2 className="text-xl font-bold">Review your booking</h2>
-                            <p className="text-sm text-muted-foreground">Please review your selected services, time, and stylist. Click &quot;Confirm booking&quot; to finalize your appointment.</p>
+                        <div className="flex flex-col gap-6 bg-card border rounded-2xl p-6">
+                            <div>
+                                <h2 className="text-xl font-bold">Review your booking</h2>
+                                <p className="text-sm text-muted-foreground mt-1">Please review your selected services, time, and stylist. Click &quot;Confirm booking&quot; to finalize your appointment.</p>
+                            </div>
+
+                            <div className="flex flex-col gap-4 bg-muted/30 p-4 rounded-xl border">
+                                <div>
+                                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">Services</h3>
+                                    <div className="flex flex-col gap-2">
+                                        {selectedTreatments.map(t => (
+                                            <div key={t.id} className="flex justify-between items-center text-sm">
+                                                <span>{t.name}</span>
+                                                <span className="font-semibold">${t.price}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-border my-1" />
+
+                                <div>
+                                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">Date & Time</h3>
+                                    <p className="text-sm">
+                                        {selectedTime ? new Date(selectedTime).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' }) : 'Not selected'}
+                                    </p>
+                                </div>
+
+                                <div className="h-px bg-border my-1" />
+
+                                <div>
+                                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">Stylist</h3>
+                                    <p className="text-sm">
+                                        {selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : 'Not selected'}
+                                    </p>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={() => setStep('employee')}
-                                className="text-sm text-muted-foreground hover:text-foreground w-fit mt-4"
+                                className="text-sm text-muted-foreground hover:text-foreground w-fit"
                             >
                                 ← Back to stylist selection
                             </button>

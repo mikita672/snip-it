@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const proxy = async (request: NextRequest) => {
+    const isApi = request.nextUrl.pathname.startsWith('/api');
+
+    if (!isApi) {
+        const hasToken = request.cookies.has('access_token');
+        if (!hasToken) {
+            const refresh = await fetch(`${process.env.API_URL}/auth/refresh`, {
+                method: "POST",
+                headers: request.headers
+            });
+            if (!refresh.ok) {
+                return NextResponse.redirect(new URL('/login', request.url));
+            }
+            const newCookies = refresh.headers.getSetCookie();
+            const response = NextResponse.next();
+            newCookies.forEach((cookie) => response.headers.append('Set-Cookie', cookie));
+            return response;
+        }
+        return NextResponse.next();
+    }
+
     const endpoint = request.nextUrl.pathname.replace('/api', '');
     const url = `${process.env.API_URL}${endpoint}${request.nextUrl.search}`;
 
@@ -14,7 +34,7 @@ export const proxy = async (request: NextRequest) => {
         body: requestBody
     });
 
-    if (response.status !== 401) {
+    if (response.status !== 401 && response.status !== 403) {
         return new NextResponse(response.body, {
             status: response.status,
             headers: new Headers(response.headers),
@@ -53,5 +73,5 @@ export const proxy = async (request: NextRequest) => {
 };
 
 export const config = {
-    matcher: "/api/:path*",
+    matcher: ["/api/:path*", "/book"],
 };
