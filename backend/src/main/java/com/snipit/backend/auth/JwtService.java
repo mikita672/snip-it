@@ -32,9 +32,9 @@ public class JwtService {
     public Integer extractUserId(String jwt) {
         return extractClaim(jwt, claims -> {
             Object val = claims.get("userId");
-            if (val instanceof Integer) return (Integer) val;
-            if (val instanceof Number) return ((Number) val).intValue();
-            if (val instanceof String) return Integer.valueOf((String) val);
+            if (val instanceof Integer) { return (Integer) val; }
+            if (val instanceof Number) { return ((Number) val).intValue(); }
+            if (val instanceof String) { return Integer.valueOf((String) val); }
             return null;
         });
     }

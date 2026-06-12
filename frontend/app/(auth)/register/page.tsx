@@ -68,7 +68,6 @@ function Register() {
             router.push("/");
             router.refresh();
         } else {
-            console.log(response);
             toast.error("Failed to register");
         }
     }

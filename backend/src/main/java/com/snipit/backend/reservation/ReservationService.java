@@ -112,7 +112,6 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
 
-        // Let's assume user with ROLE_ADMIN could cancel any, but for simplicity, we just check ownership.
         if (!reservation.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized");
         }

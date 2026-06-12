@@ -31,7 +31,7 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
 
         fetch(`/api/availability/employees?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
-                if (!res.ok) throw new Error()
+                if (!res.ok) { throw new Error() }
                 return res.json() as Promise<AvailableEmployee[]>
             })
             .then(data => setEmployees(data))

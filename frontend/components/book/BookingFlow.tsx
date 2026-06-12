@@ -32,7 +32,7 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
         const map = new Map<number, TreatmentPreview>()
         if (initialTreatment) {
             const t = treatments.find(t => t.id === initialTreatment)
-            if (t) map.set(t.id, t)
+            if (t) { map.set(t.id, t) }
         }
         return map
     })
@@ -69,7 +69,7 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
                 }),
             })
 
-            if (!response.ok) throw new Error()
+            if (!response.ok) { throw new Error() }
 
             toast.success('Booking confirmed!')
             router.push('/')

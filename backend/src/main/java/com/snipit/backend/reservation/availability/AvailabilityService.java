@@ -37,7 +37,7 @@ public class AvailabilityService {
     @Transactional(readOnly = true)
     public List<String> getAvailableSlots(List<Integer> treatmentIds, LocalDate date) {
         List<Integer> employeeIds = employeeRepository.findEmployeeIdsByAllTreatments(treatmentIds, treatmentIds.size());
-        if (employeeIds.isEmpty()) return List.of();
+        if (employeeIds.isEmpty()) { return List.of(); }
 
         int sumDuration = sumDuration(treatmentIds);
         int dayOfWeek = date.getDayOfWeek().getValue();
@@ -57,7 +57,7 @@ public class AvailabilityService {
                     .ifPresent(schedule -> {
                         List<Reservation> reservations = reservationsByEmployee.getOrDefault(employee.getId(), List.of());
                         for (LocalTime slot : generateSlots(schedule.getStartTime(), schedule.getEndTime(), sumDuration)) {
-                            if (isToday && slot.isBefore(now)) continue;
+                            if (isToday && slot.isBefore(now)) { continue; }
                             if (!isBlocked(slot, sumDuration, reservations)) {
                                 availableSlots.add(slot);
                             }
@@ -89,7 +89,7 @@ public class AvailabilityService {
     @Transactional(readOnly = true)
     public List<AvailableEmployeeDTO> getAvailableEmployees(List<Integer> treatmentIds, LocalDateTime dateTime) {
         List<Integer> employeeIds = employeeRepository.findEmployeeIdsByAllTreatments(treatmentIds, treatmentIds.size());
-        if (employeeIds.isEmpty()) return List.of();
+        if (employeeIds.isEmpty()) { return List.of(); }
 
         int sumDuration = sumDuration(treatmentIds);
         int dayOfWeek = dateTime.getDayOfWeek().getValue();
@@ -119,7 +119,7 @@ public class AvailabilityService {
     }
 
     private int getRoundedDuration(int durationMinutes) {
-        if (durationMinutes == 0) return 0;
+        if (durationMinutes == 0) { return 0; }
         int slots = (int) Math.ceil((double) durationMinutes / SLOT_INTERVAL_MINUTES);
         return slots * SLOT_INTERVAL_MINUTES;
     }

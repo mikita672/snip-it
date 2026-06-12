@@ -58,7 +58,7 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
     }, [treatmentIdsStr])
 
     useEffect(() => {
-        if (!date) return
+        if (!date) { return }
 
         const dateStr = toISODate(date)
         setSelectedSlot('')
@@ -72,7 +72,7 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
 
         fetch(`/api/availability?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
-                if (!res.ok) throw new Error()
+                if (!res.ok) { throw new Error() }
                 return res.json() as Promise<string[]>
             })
             .then(data => setSlots(data))
@@ -94,8 +94,8 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
 
     const isDateDisabled = (d: Date) => {
         d.setHours(0, 0, 0, 0)
-        if (d < today || d > maxDate) return true
-        if (loadingDays) return true
+        if (d < today || d > maxDate) { return true }
+        if (loadingDays) { return true }
         const dateStr = toISODate(d)
         return !availableDays.has(dateStr)
     }

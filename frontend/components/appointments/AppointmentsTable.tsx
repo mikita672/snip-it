@@ -17,13 +17,13 @@ export default function AppointmentsTable({ initialData }: Props) {
     const [loadingId, setLoadingId] = useState<number | null>(null);
 
     const handleCancel = async (id: number) => {
-        if (!confirm('Are you sure you want to cancel this appointment?')) return;
+        if (!confirm('Are you sure you want to cancel this appointment?')) { return; }
         setLoadingId(id);
         try {
             const response = await fetch(`/api/reservation/${id}?status=Cancelled`, {
                 method: 'PATCH',
             });
-            if (!response.ok) throw new Error();
+            if (!response.ok) { throw new Error(); }
             toast.success('Appointment cancelled successfully');
             router.refresh();
         } catch {
