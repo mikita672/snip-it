@@ -29,7 +29,7 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
         treatmentIds.forEach(id => params.append('treatmentIds', String(id)))
         params.set('dateTime', selectedTime)
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/availability/employees?${params.toString()}`)
+        fetch(`/api/availability/employees?${params.toString()}`)
             .then(res => {
                 if (!res.ok) throw new Error()
                 return res.json() as Promise<AvailableEmployee[]>
@@ -37,7 +37,7 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
             .then(data => setEmployees(data))
             .catch(() => setError(true))
             .finally(() => setLoading(false))
-    }, [])
+    }, [selectedTime, treatmentIds])
 
     function handleSelect(employee: AvailableEmployee) {
         setSelected(employee.id)

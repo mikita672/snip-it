@@ -17,7 +17,7 @@ public class TreatmentService {
 		String asString() {
 			return switch (this) {
 				case PRICE -> "price";
-				case DURATION -> "minDurationMinutes";
+				case DURATION -> "durationMinutes";
 			};
 		}
 	}

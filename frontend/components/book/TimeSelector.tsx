@@ -25,16 +25,19 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
 
     useEffect(() => {
         if (!date) return
-        setSelectedSlot('')
-        setSlots([])
-        setError(false)
-        setLoading(true)
+        
+        Promise.resolve().then(() => {
+            setSelectedSlot('')
+            setSlots([])
+            setError(false)
+            setLoading(true)
+        })
 
         const params = new URLSearchParams()
         treatmentIds.forEach(id => params.append('treatmentIds', String(id)))
         params.set('date', date)
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/availability?${params.toString()}`)
+        fetch(`/api/availability?${params.toString()}`)
             .then(res => {
                 if (!res.ok) throw new Error()
                 return res.json() as Promise<string[]>

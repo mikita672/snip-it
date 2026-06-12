@@ -9,7 +9,6 @@ public record TreatmentPreviewDTO(
 	Integer id,
 	String name,
 	String description,
-	Integer minDurationMinutes,
-	Integer maxDurationMinutes,
+	Integer durationMinutes,
 	BigDecimal price
 ) {}

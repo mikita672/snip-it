@@ -45,11 +45,6 @@ async function Header() {
 					>Services</Link>
 
 					<Link
-						href="/book"
-						className="text-sm text-primary cursor-pointer hover:opacity-75 uppercase"
-					>Book</Link>
-
-					<Link
 						href="/appointments"
 						className="text-sm text-primary cursor-pointer hover:opacity-75 uppercase"
 					>My appointments</Link>

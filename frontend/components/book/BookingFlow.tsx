@@ -8,25 +8,40 @@ import TreatmentSelector from './TreatmentSelector'
 import BookingSummary from './BookingSummary'
 import TimeSelector from './TimeSelector'
 import EmployeeSelector, { AvailableEmployee } from './EmployeeSelector'
+import TreatmentsPagination from '../home/TreatmentsSection/TreatmentsPagination'
+import TreatmentsHeader from '../home/TreatmentsSection/TreatmentsHeader'
 
 type Step = 'treatments' | 'time' | 'employee'
 
 interface Props {
     treatments: TreatmentPreview[]
+    initialTreatment?: number
+    totalPages: number
 }
 
-export default function BookingFlow({ treatments }: Props) {
+export default function BookingFlow({ treatments, initialTreatment, totalPages }: Props) {
     const router = useRouter()
     const [step, setStep] = useState<Step>('treatments')
-    const [selected, setSelected] = useState<Set<number>>(new Set())
+    const [selectedMap, setSelectedMap] = useState<Map<number, TreatmentPreview>>(() => {
+        const map = new Map<number, TreatmentPreview>()
+        if (initialTreatment) {
+            const t = treatments.find(t => t.id === initialTreatment)
+            if (t) map.set(t.id, t)
+        }
+        return map
+    })
     const [selectedTime, setSelectedTime] = useState<string>('')
     const [selectedEmployee, setSelectedEmployee] = useState<AvailableEmployee | null>(null)
     const [loading, setLoading] = useState(false)
 
-    function toggle(id: number) {
-        setSelected(prev => {
-            const next = new Set(prev)
-            next.has(id) ? next.delete(id) : next.add(id)
+    function toggle(treatment: TreatmentPreview) {
+        setSelectedMap(prev => {
+            const next = new Map(prev)
+            if (next.has(treatment.id)) {
+                next.delete(treatment.id)
+            } else {
+                next.set(treatment.id, treatment)
+            }
             return next
         })
     }
@@ -43,7 +58,7 @@ export default function BookingFlow({ treatments }: Props) {
                 body: JSON.stringify({
                     employeeId: selectedEmployee!.id,
                     reservationTime: selectedTime,
-                    treatmentIds: [...selected],
+                    treatmentIds: Array.from(selectedMap.keys()),
                 }),
             })
 
@@ -58,24 +73,29 @@ export default function BookingFlow({ treatments }: Props) {
         }
     }
 
-    const selectedTreatments = treatments.filter(t => selected.has(t.id))
+    const selectedTreatments = Array.from(selectedMap.values())
+    const selectedIds = new Set(selectedMap.keys())
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex flex-col gap-4">
                 {step === 'treatments' && (
-                    <TreatmentSelector treatments={treatments} selected={selected} onToggle={toggle} />
+                    <>
+                        <TreatmentsHeader />
+                        <TreatmentSelector treatments={treatments} selected={selectedIds} onToggle={toggle} />
+                        <TreatmentsPagination totalPages={totalPages} />
+                    </>
                 )}
                 {step === 'time' && (
                     <TimeSelector
-                        treatmentIds={[...selected]}
+                        treatmentIds={Array.from(selectedIds)}
                         onBack={() => setStep('treatments')}
                         onSelect={setSelectedTime}
                     />
                 )}
                 {step === 'employee' && (
                     <EmployeeSelector
-                        treatmentIds={[...selected]}
+                        treatmentIds={Array.from(selectedIds)}
                         selectedTime={selectedTime}
                         onSelect={setSelectedEmployee}
                         onBack={() => setStep('time')}

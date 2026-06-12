@@ -100,7 +100,7 @@ public class AvailabilityService {
     private int sumDuration(List<Integer> treatmentIds) {
         return treatmentRepository.findAllById(treatmentIds)
                 .stream()
-                .mapToInt(Treatment::getMinDurationMinutes)
+                .mapToInt(Treatment::getDurationMinutes)
                 .sum();
     }
 

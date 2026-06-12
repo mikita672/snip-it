@@ -15,8 +15,7 @@ interface Props {
 
 export default function BookingSummary({ selectedTreatments, selectedTime, selectedEmployee, step, onContinue, loading }: Props) {
     const totalPrice = selectedTreatments.reduce((sum, t) => sum + t.price, 0)
-    const totalMinDuration = selectedTreatments.reduce((sum, t) => sum + t.minDurationMinutes, 0)
-    const totalMaxDuration = selectedTreatments.reduce((sum, t) => sum + t.maxDurationMinutes, 0)
+    const totalDuration = selectedTreatments.reduce((sum, t) => sum + t.durationMinutes, 0)
 
     const canContinue =
         step === 'treatments' ? selectedTreatments.length > 0 :
@@ -45,7 +44,7 @@ export default function BookingSummary({ selectedTreatments, selectedTime, selec
                             <div key={t.id} className="flex items-start justify-between gap-4">
                                 <div className="flex flex-col">
                                     <p className="font-semibold text-sm">{t.name}</p>
-                                    <p className="text-xs text-muted-foreground">{t.minDurationMinutes}–{t.maxDurationMinutes} min</p>
+                                    <p className="text-xs text-muted-foreground">{t.durationMinutes} min</p>
                                 </div>
                                 <p className="text-sm font-semibold whitespace-nowrap">${t.price}</p>
                             </div>
@@ -57,7 +56,7 @@ export default function BookingSummary({ selectedTreatments, selectedTime, selec
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between text-sm text-muted-foreground">
                             <p>Est. duration</p>
-                            <p>{totalMinDuration}–{totalMaxDuration} min</p>
+                            <p>{totalDuration} min</p>
                         </div>
                         <div className="flex items-center justify-between">
                             <p className="font-bold">Total</p>

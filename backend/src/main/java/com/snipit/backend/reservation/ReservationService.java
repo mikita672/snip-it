@@ -52,7 +52,7 @@ public class ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
-        int sumDuration = treatments.stream().mapToInt(Treatment::getMinDurationMinutes).sum();
+        int sumDuration = treatments.stream().mapToInt(Treatment::getDurationMinutes).sum();
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
