@@ -8,10 +8,14 @@ export const proxy = async (request: NextRequest) => {
         ? undefined
         : await request.text();
 
+    const forwardHeaders = new Headers(request.headers);
+    forwardHeaders.delete('host');
+    forwardHeaders.delete('connection');
+
     const response = await fetch(url, {
         method: request.method,
-        headers: request.headers,
-        body: requestBody
+        headers: forwardHeaders,
+        body: requestBody && requestBody.length > 0 ? requestBody : undefined
     });
 
     if (response.status !== 401) {
@@ -37,7 +41,7 @@ export const proxy = async (request: NextRequest) => {
     const retryResponse = await fetch(url, {
         method: request.method,
         headers: retryHeaders,
-        body: requestBody
+        body: requestBody && requestBody.length > 0 ? requestBody : undefined
     });
 
     const finalResponse = new NextResponse(retryResponse.body, {
