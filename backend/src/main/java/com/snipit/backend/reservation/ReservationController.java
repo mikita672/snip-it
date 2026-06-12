@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
+import com.snipit.backend.reservation.dto.UserReservationsPageDTO;
 import com.snipit.backend.user.User;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +34,14 @@ public class ReservationController {
         return reservationService.findAllReservations();
     }
 
+    @GetMapping("/my-appointments")
+    public UserReservationsPageDTO getMyAppointments(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return reservationService.getUserReservations(user, page, size);
+    }
+
     @GetMapping("/{id}")
     public ReservationResponseDTO getById(@PathVariable Integer id) {
         return reservationService.findReservationById(id);
@@ -44,7 +53,10 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}")
-    public ReservationResponseDTO updateStatus(@PathVariable Integer id, @RequestParam String status) {
-        return reservationService.updateReservationStatus(id, status);
+    public ReservationResponseDTO updateStatus(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer id, 
+            @RequestParam String status) {
+        return reservationService.updateReservationStatus(id, status, user);
     }
 }
