@@ -20,6 +20,7 @@ public class ReservationMapper {
             .treatmentIds(reservation.getTreatments().stream()
                 .map(Treatment::getId)
                 .collect(Collectors.toSet()))
+            .sumDuration(reservation.getSumDuration())
             .build();
     }
 

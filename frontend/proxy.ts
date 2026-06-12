@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const proxy = async (request: NextRequest) => {
     const endpoint = request.nextUrl.pathname.replace('/api', '');
-    const url = `${process.env.API_URL}${endpoint}`;
+    const url = `${process.env.API_URL}${endpoint}${request.nextUrl.search}`;
 
     const requestBody = request.method === "GET" || request.method === "HEAD"
         ? undefined

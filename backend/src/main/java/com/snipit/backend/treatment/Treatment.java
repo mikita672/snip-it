@@ -28,11 +28,8 @@ public class Treatment {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "min_duration_minutes", nullable = false)
-    private Integer minDurationMinutes;
-
-    @Column(name = "max_duration_minutes", nullable = false)
-    private Integer maxDurationMinutes;
+    @Column(name = "duration_minutes", nullable = false)
+    private Integer durationMinutes;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

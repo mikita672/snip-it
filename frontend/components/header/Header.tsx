@@ -40,9 +40,9 @@ async function Header() {
 			<div className="flex gap-8 items-center">
 				<div className="hidden md:flex gap-4">
 					<Link
-						href="/services"
+						href="/book"
 						className="text-sm text-primary cursor-pointer hover:opacity-75 uppercase"
-					>Services</Link>
+					>Book</Link>
 
 					<Link
 						href="/appointments"

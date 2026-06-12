@@ -36,6 +36,9 @@ public class Reservation {
     @Column
     private String status;
 
+    @Column(name = "sum_duration")
+    private Integer sumDuration;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

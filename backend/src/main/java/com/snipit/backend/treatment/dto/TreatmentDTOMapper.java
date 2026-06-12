@@ -11,8 +11,7 @@ public class TreatmentDTOMapper {
 			.id(treatment.getId())
 			.name(treatment.getName())
 			.description(treatment.getDescription())
-			.minDurationMinutes(treatment.getMinDurationMinutes())
-			.maxDurationMinutes(treatment.getMaxDurationMinutes())
+			.durationMinutes(treatment.getDurationMinutes())
 			.price(treatment.getPrice())
 			.build();
 	}

@@ -13,5 +13,6 @@ public record ReservationResponseDTO(
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime reservationTime,
     String status,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime createdAt,
-    Set<Integer> treatmentIds
+    Set<Integer> treatmentIds,
+    Integer sumDuration
 ) {}
