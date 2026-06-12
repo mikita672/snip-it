@@ -2,7 +2,7 @@ import { Separator } from '@/components/ui/separator'
 import { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
 import { AvailableEmployee } from './EmployeeSelector'
 
-type Step = 'treatments' | 'time' | 'employee'
+type Step = 'treatments' | 'time' | 'employee' | 'confirm'
 
 interface Props {
     selectedTreatments: TreatmentPreview[]
@@ -20,7 +20,8 @@ export default function BookingSummary({ selectedTreatments, selectedTime, selec
     const canContinue =
         step === 'treatments' ? selectedTreatments.length > 0 :
         step === 'time' ? !!selectedTime :
-        !!selectedEmployee
+        step === 'employee' ? !!selectedEmployee :
+        true
 
     const formattedTime = selectedTime
         ? new Date(selectedTime).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
@@ -29,6 +30,7 @@ export default function BookingSummary({ selectedTreatments, selectedTime, selec
     const buttonLabel =
         step === 'treatments' ? `Continue (${selectedTreatments.length} selected)` :
         step === 'time' ? 'Confirm time' :
+        step === 'employee' ? 'Confirm stylist' :
         'Confirm booking'
 
     return (

@@ -28,7 +28,7 @@ async function TreatmentsResults({ params }: Props) {
 		<div className="flex flex-col gap-4">
 			<div className="flex flex-col gap-1">
 				{data.treatments.map((treatment) => (
-					<Link key={treatment.id} href={`/services?${params.toString()}&treatment=${treatment.id}`}>
+					<Link key={treatment.id} href={`/book?${params.toString()}&treatment=${treatment.id}`}>
 						<Item className="bg-card hover:opacity-75 cursor-pointer border-foreground border-opacity-75">
 							<ItemContent>
 								<ItemTitle className="w-full flex items-center justify-between">
