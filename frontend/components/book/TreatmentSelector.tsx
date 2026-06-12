@@ -28,7 +28,7 @@ export default function TreatmentSelector({ treatments, selected, onToggle }: Pr
                                     'cursor-pointer border transition-colors',
                                     isSelected
                                         ? 'border-primary bg-primary/10'
-                                        : 'border-border hover:opacity-75'
+                                        : 'bg-card border-foreground border-opacity-75 hover:opacity-75'
                                 )}
                             >
                                 <ItemContent>

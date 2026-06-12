@@ -47,13 +47,17 @@ public class AvailabilityService {
 
         Set<LocalTime> availableSlots = new TreeSet<>();
 
-        for (Employee employee : employees) {
+        LocalTime now = LocalTime.now();
+        boolean isToday = date.equals(LocalDate.now());
+
+        for (Employee employee : employees.stream().distinct().toList()) {
             employee.getSchedules().stream()
                     .filter(s -> s.getDayOfWeek().equals(dayOfWeek))
                     .findFirst()
                     .ifPresent(schedule -> {
                         List<Reservation> reservations = reservationsByEmployee.getOrDefault(employee.getId(), List.of());
                         for (LocalTime slot : generateSlots(schedule.getStartTime(), schedule.getEndTime(), sumDuration)) {
+                            if (isToday && slot.isBefore(now)) continue;
                             if (!isBlocked(slot, sumDuration, reservations)) {
                                 availableSlots.add(slot);
                             }
@@ -64,6 +68,22 @@ public class AvailabilityService {
         return availableSlots.stream()
                 .map(t -> t.format(TIME_FORMAT))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getAvailableDays(List<Integer> treatmentIds, LocalDate startDate, LocalDate endDate) {
+        List<String> availableDays = new ArrayList<>();
+        LocalDate currentDate = startDate;
+        int maxDays = 30;
+        int count = 0;
+        while (!currentDate.isAfter(endDate) && count < maxDays) {
+            if (!getAvailableSlots(treatmentIds, currentDate).isEmpty()) {
+                availableDays.add(currentDate.toString());
+            }
+            currentDate = currentDate.plusDays(1);
+            count++;
+        }
+        return availableDays;
     }
 
     @Transactional(readOnly = true)
@@ -79,6 +99,7 @@ public class AvailabilityService {
         Map<Integer, List<Reservation>> reservationsByEmployee = fetchReservationsByEmployee(employeeIds, dateTime.toLocalDate());
 
         return employees.stream()
+                .distinct()
                 .filter(e -> e.getSchedules().stream()
                         .filter(s -> s.getDayOfWeek().equals(dayOfWeek))
                         .anyMatch(s -> !requestedTime.isBefore(s.getStartTime())

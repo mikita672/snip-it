@@ -11,9 +11,13 @@ import com.snipit.backend.user.User;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.snipit.backend.reservation.availability.AvailabilityService;
+import com.snipit.backend.reservation.availability.AvailableEmployeeDTO;
 
 @Service
 public class ReservationService {
@@ -22,16 +26,19 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final EmployeeRepository employeeRepository;
     private final TreatmentRepository treatmentRepository;
+    private final AvailabilityService availabilityService;
 
     public ReservationService(
             EmployeeRepository employeeRepository,
             TreatmentRepository treatmentRepository,
             ReservationMapper reservationMapper,
-            ReservationRepository reservationRepository) {
+            ReservationRepository reservationRepository,
+            AvailabilityService availabilityService) {
         this.employeeRepository = employeeRepository;
         this.treatmentRepository = treatmentRepository;
         this.reservationMapper = reservationMapper;
         this.reservationRepository = reservationRepository;
+        this.availabilityService = availabilityService;
     }
 
     public List<ReservationResponseDTO> findAllReservations() {
@@ -50,6 +57,17 @@ public class ReservationService {
     public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User user) {
         Employee employee = employeeRepository.findById(dto.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
+
+        List<AvailableEmployeeDTO> availableEmployees = availabilityService.getAvailableEmployees(
+                new ArrayList<>(dto.treatmentIds()), dto.reservationTime()
+        );
+
+        boolean isAvailable = availableEmployees.stream()
+                .anyMatch(e -> e.id().equals(dto.employeeId()));
+
+        if (!isAvailable) {
+            throw new IllegalArgumentException("The selected time slot is not available for this employee.");
+        }
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
         int sumDuration = treatments.stream().mapToInt(Treatment::getDurationMinutes).sum();

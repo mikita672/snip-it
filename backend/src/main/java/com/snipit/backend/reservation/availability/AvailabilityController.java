@@ -27,6 +27,14 @@ public class AvailabilityController {
         return availabilityService.getAvailableSlots(treatmentIds, date);
     }
 
+    @GetMapping("/days")
+    public List<String> getAvailableDays(
+            @RequestParam List<Integer> treatmentIds,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return availabilityService.getAvailableDays(treatmentIds, startDate, endDate);
+    }
+
     @GetMapping("/employees")
     public List<AvailableEmployeeDTO> getAvailableEmployees(
             @RequestParam List<Integer> treatmentIds,
