@@ -13,10 +13,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useRouter } from "next/navigation"
 
 const profileSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    firstName: z.string().min(2, "First name must be at least 2 characters").max(50, "First name is too long"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters").max(50, "Last name is too long"),
     email: z.string().email("Invalid email address"),
-    phone: z.string().optional().nullable(),
+    phone: z.string()
+        .refine((val) => !val || /^\+?[0-9\s-]{7,15}$/.test(val), {
+            message: "Invalid phone number format",
+        })
+        .optional()
+        .nullable(),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
