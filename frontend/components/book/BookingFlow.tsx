@@ -11,6 +11,7 @@ import EmployeeSelector, { AvailableEmployee } from './EmployeeSelector'
 import TreatmentsPagination from '../home/TreatmentsSection/TreatmentsPagination'
 import TreatmentsHeader from '../home/TreatmentsSection/TreatmentsHeader'
 import { Stepper, StepId } from './Stepper'
+import { Button } from '@/components/ui/button'
 
 interface Props {
     treatments: TreatmentPreview[]
@@ -32,7 +33,9 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
         const map = new Map<number, TreatmentPreview>()
         if (initialTreatment) {
             const t = treatments.find(t => t.id === initialTreatment)
-            if (t) { map.set(t.id, t) }
+            if (t) {
+                map.set(t.id, t)
+            }
         }
         return map
     })
@@ -53,9 +56,18 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
     }
 
     async function handleContinue() {
-        if (step === 'treatments') { setStep('time'); return }
-        if (step === 'time') { setStep('employee'); return }
-        if (step === 'employee') { setStep('confirm'); return }
+        if (step === 'treatments') {
+            setStep('time')
+            return
+        }
+        if (step === 'time') {
+            setStep('employee')
+            return
+        }
+        if (step === 'employee') {
+            setStep('confirm')
+            return
+        }
 
         setLoading(true)
         try {
@@ -69,7 +81,9 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
                 }),
             })
 
-            if (!response.ok) { throw new Error() }
+            if (!response.ok) {
+                throw new Error()
+            }
 
             toast.success('Booking confirmed!')
             router.push('/')
@@ -150,12 +164,13 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
                                 </div>
                             </div>
 
-                            <button
+                            <Button
+                                variant="link"
                                 onClick={() => setStep('employee')}
-                                className="text-sm text-muted-foreground hover:text-foreground w-fit"
+                                className="text-sm text-muted-foreground hover:text-foreground w-fit px-0"
                             >
                                 ← Back to stylist selection
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>

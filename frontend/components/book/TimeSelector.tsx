@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
+import { Button } from '@/components/ui/button'
 
 interface Props {
     treatmentIds: number[]
@@ -58,7 +59,9 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
     }, [treatmentIdsStr])
 
     useEffect(() => {
-        if (!date) { return }
+        if (!date) {
+            return
+        }
 
         const dateStr = toISODate(date)
         setSelectedSlot('')
@@ -72,7 +75,9 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
 
         fetch(`/api/availability?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
-                if (!res.ok) { throw new Error() }
+                if (!res.ok) {
+                    throw new Error()
+                }
                 return res.json() as Promise<string[]>
             })
             .then(data => setSlots(data))
@@ -94,20 +99,25 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
 
     const isDateDisabled = (d: Date) => {
         d.setHours(0, 0, 0, 0)
-        if (d < today || d > maxDate) { return true }
-        if (loadingDays) { return true }
+        if (d < today || d > maxDate) {
+            return true
+        }
+        if (loadingDays) {
+            return true
+        }
         const dateStr = toISODate(d)
         return !availableDays.has(dateStr)
     }
 
     return (
         <div className="flex flex-col gap-6">
-            <button
+            <Button
+                variant="ghost"
                 onClick={onBack}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit px-0"
             >
                 <ChevronLeftIcon size={16} /> Back to services
-            </button>
+            </Button>
 
             <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex flex-col gap-2">
@@ -140,18 +150,19 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
                         {!loadingSlots && !error && slots.length > 0 && (
                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                                 {slots.map((slot) => (
-                                    <button
+                                    <Button
                                         key={slot}
+                                        variant="outline"
                                         onClick={() => handleSlotClick(slot)}
                                         className={cn(
-                                            'rounded-xl border px-3 py-2 text-sm font-medium transition-colors',
+                                            'rounded-xl px-3 py-2 text-sm font-medium transition-colors h-auto',
                                             selectedSlot === slot
-                                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                                ? 'border-primary bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
                                                 : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5'
                                         )}
                                     >
                                         {slot}
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
                         )}

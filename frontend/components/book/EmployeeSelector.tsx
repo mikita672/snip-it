@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { ChevronLeftIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export interface AvailableEmployee {
     id: number
@@ -31,7 +32,9 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
 
         fetch(`/api/availability/employees?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
-                if (!res.ok) { throw new Error() }
+                if (!res.ok) {
+                    throw new Error()
+                }
                 return res.json() as Promise<AvailableEmployee[]>
             })
             .then(data => setEmployees(data))
@@ -46,12 +49,13 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
 
     return (
         <div className="flex flex-col gap-6">
-            <button
+            <Button
+                variant="ghost"
                 onClick={onBack}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit px-0"
             >
                 <ChevronLeftIcon size={16} /> Back to time selection
-            </button>
+            </Button>
 
             <div>
                 <p className="text-sm font-medium">Select a specialist</p>
@@ -67,19 +71,20 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
             {!loading && !error && employees.length > 0 && (
                 <div className="flex flex-col gap-3">
                     {employees.map(employee => (
-                        <button
+                        <Button
                             key={employee.id}
+                            variant="outline"
                             onClick={() => handleSelect(employee)}
                             className={cn(
-                                'flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-colors',
+                                'flex flex-col items-start gap-1 rounded-xl px-4 py-3 text-left transition-colors h-auto w-full',
                                 selected === employee.id
-                                    ? 'border-primary bg-primary/10'
+                                    ? 'border-primary bg-primary/10 hover:bg-primary/20'
                                     : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5'
                             )}
                         >
                             <p className="font-semibold text-sm">{employee.firstName} {employee.lastName}</p>
                             <p className="text-xs text-muted-foreground">{employee.position}</p>
-                        </button>
+                        </Button>
                     ))}
                 </div>
             )}
