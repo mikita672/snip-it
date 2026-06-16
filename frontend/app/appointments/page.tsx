@@ -20,10 +20,14 @@ async function AppointmentsPage({ searchParams }: Props) {
     const sort = paramsObj.sort ? (paramsObj.sort as string) : 'reservationTime';
     const direction = paramsObj.direction ? (paramsObj.direction as string) : 'desc';
     const search = paramsObj.search ? (paramsObj.search as string) : '';
+    const status = paramsObj.status ? (paramsObj.status as string) : '';
 
     let url = `/api/reservation/my-appointments?page=${page}&size=${size}&sort=${sort}&direction=${direction}`;
     if (search) {
         url += `&search=${encodeURIComponent(search)}`;
+    }
+    if (status) {
+        url += `&status=${encodeURIComponent(status)}`;
     }
 
     const response = await serverFetch(url, {

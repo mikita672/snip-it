@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Props {
     initialData: UserReservationsPage;
@@ -26,18 +27,23 @@ export default function AppointmentsTable({ initialData }: Props) {
 
     const currentSort = searchParams.get('sort') || 'reservationTime';
     const currentDirection = searchParams.get('direction') || 'desc';
+    const currentStatus = searchParams.get('status') || 'all';
+    const currentSize = searchParams.get('size') || '5';
 
     const updateParams = (updates: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());
         Object.entries(updates).forEach(([key, value]) => {
-            if (value === null) {
+            if (value === null || value === 'all') {
                 params.delete(key);
             } else {
                 params.set(key, value);
             }
         });
-        if (!updates.page) params.set('page', '0');
-        
+
+        if (!updates.page && updates.page !== '0') {
+            params.set('page', '0');
+        }
+
         startTransition(() => {
             router.push(`${pathname}?${params.toString()}`);
         });
@@ -94,12 +100,12 @@ export default function AppointmentsTable({ initialData }: Props) {
         return <Badge variant="outline">{status}</Badge>;
     };
 
-    const startItem = initialData.currentPage * 5 + 1;
-    const endItem = Math.min((initialData.currentPage + 1) * 5, initialData.totalElements);
+    const startItem = initialData.currentPage * Number(currentSize) + 1;
+    const endItem = Math.min((initialData.currentPage + 1) * Number(currentSize), initialData.totalElements);
 
     return (
         <div className="w-full space-y-4">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <form action={handleSearch} className="relative max-w-sm w-full">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -111,6 +117,39 @@ export default function AppointmentsTable({ initialData }: Props) {
                         onChange={(e) => setSearchValue(e.target.value)}
                     />
                 </form>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Select
+                        value={currentStatus}
+                        onValueChange={(value) => updateParams({ status: value })}
+                    >
+                        <SelectTrigger className="w-37.5">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                            <SelectItem value="Confirmed">Confirmed</SelectItem>
+                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={currentSize}
+                        onValueChange={(value) => updateParams({ size: value })}
+                    >
+                        <SelectTrigger className="w-25">
+                            <SelectValue placeholder="Rows" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="5">5 rows</SelectItem>
+                            <SelectItem value="10">10 rows</SelectItem>
+                            <SelectItem value="20">20 rows</SelectItem>
+                            <SelectItem value="50">50 rows</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div className="rounded-md border bg-card">

@@ -72,15 +72,20 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction,
-            String search) {
-        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
+    public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction, String search, String status) {
+        Sort sortObj = direction.equalsIgnoreCase("desc") ? 
+            Sort.by(sort).descending() : 
+            Sort.by(sort).ascending();
 
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
         Specification<Reservation> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("user"), user));
+
+            if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("all")) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
 
             if (search != null && !search.isEmpty()) {
                 String searchLower = "%" + search.toLowerCase() + "%";

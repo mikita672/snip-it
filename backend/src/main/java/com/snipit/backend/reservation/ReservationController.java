@@ -41,8 +41,9 @@ public class ReservationController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "reservationTime") String sort,
             @RequestParam(defaultValue = "desc") String direction,
-            @RequestParam(required = false) String search) {
-        return reservationService.getUserReservations(user, page, size, sort, direction, search);
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status) {
+        return reservationService.getUserReservations(user, page, size, sort, direction, search, status);
     }
 
     @GetMapping("/{id}")
