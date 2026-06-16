@@ -217,9 +217,10 @@ function Register() {
           <Button
             form="sign-up-form"
             type="submit"
-            className={`w-full ${form.formState.isValid ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
+            disabled={form.formState.isSubmitting || !form.formState.isValid}
+            className={`w-full ${form.formState.isValid && !form.formState.isSubmitting ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
           >
-            Sign up
+            {form.formState.isSubmitting ? "Signing up..." : "Sign up"}
           </Button>
 
           <div className="flex flex-col gap-2 items-center">
