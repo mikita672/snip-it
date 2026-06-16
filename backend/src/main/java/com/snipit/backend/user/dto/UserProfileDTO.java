@@ -5,5 +5,6 @@ public record UserProfileDTO(
     String email,
     String firstName,
     String lastName,
-    String phone
+    String phone,
+    Boolean isAdmin
 ) {}

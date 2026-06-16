@@ -38,15 +38,28 @@ export default async function ProfilePage() {
             </div>
 
             <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="grid w-full md:w-[400px] grid-cols-2 bg-muted/50">
+                <TabsList className={`grid w-full md:w-[400px] bg-muted/50 ${user.isAdmin ? "grid-cols-3" : "grid-cols-2"}`}>
                     <TabsTrigger value="profile">Profile</TabsTrigger>
                     <TabsTrigger value="appointments" asChild>
                         <Link href="/appointments">Appointments</Link>
                     </TabsTrigger>
+                    
+                    {user.isAdmin && (
+                        <TabsTrigger value="management">Management</TabsTrigger>
+                    )}
                 </TabsList>
+                
                 <TabsContent value="profile" className="mt-6">
                     <ProfileForm user={user} />
                 </TabsContent>
+
+                {user.isAdmin && (
+                    <TabsContent value="management" className="mt-6">
+                        <div className="p-4 border rounded-lg bg-card text-muted-foreground">
+                            Coming soon
+                        </div>
+                    </TabsContent>
+                )}
             </Tabs>
         </div>
     )

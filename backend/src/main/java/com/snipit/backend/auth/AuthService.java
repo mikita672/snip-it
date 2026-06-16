@@ -1,21 +1,24 @@
 package com.snipit.backend.auth;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import static org.springframework.security.core.userdetails.User.builder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import static org.springframework.security.core.userdetails.User.builder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.snipit.backend.auth.refreshTokens.RefreshToken;
 import com.snipit.backend.auth.refreshTokens.RefreshTokenRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
-import com.snipit.backend.auth.refreshTokens.RefreshToken;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -42,6 +45,7 @@ public class AuthService {
                 .build();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());
+        extra.put("isAdmin", user.getIsAdmin());
         String accessToken = jwtService.generateToken(extra, userDetails);
         String refreshToken = issueRefreshToken(user);
         return new AuthTokens(accessToken, refreshToken);
@@ -58,6 +62,7 @@ public class AuthService {
                 .build();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());
+        extra.put("isAdmin", user.getIsAdmin());
         String accessToken = jwtService.generateToken(extra, userDetails);
         String refreshToken = issueRefreshToken(user);
         return new AuthTokens(accessToken, refreshToken);
@@ -73,6 +78,7 @@ public class AuthService {
         User user = stored.getUser();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());
+        extra.put("isAdmin", user.getIsAdmin());
         String newAccess = jwtService.generateToken(extra, builder()
             .username(user.getEmail())
             .password(user.getPasswordHash())

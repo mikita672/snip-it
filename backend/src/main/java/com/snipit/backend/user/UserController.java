@@ -25,7 +25,8 @@ public class UserController {
             user.getEmail(),
             user.getFirstName(),
             user.getLastName(),
-            user.getPhone()
+            user.getPhone(),
+            user.getIsAdmin()
         );
     }
 
@@ -43,7 +44,8 @@ public class UserController {
             saved.getEmail(),
             saved.getFirstName(),
             saved.getLastName(),
-            saved.getPhone()
+            saved.getPhone(),
+            saved.getIsAdmin()
         );
     }
 }
