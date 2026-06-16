@@ -21,30 +21,30 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
         private static final String ACCESS_COOKIE = "access_token";
         private static final String REFRESH_COOKIE = "refresh_token";
-        private final AuthService service;
+        private final AuthService authService;
 
         @PostMapping("/sign-up")
         public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {
-                AuthTokens tokens = service.register(request.getEmail(), request.getPassword());
+                AuthTokens tokens = authService.register(request.getEmail(), request.getPassword());
                 return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
         @PostMapping("/sign-in")
         public ResponseEntity<Void> authenticate(@Valid @RequestBody AuthenticateRequestDTO request) {
-                AuthTokens tokens = service.authenticate(request.getEmail(), request.getPassword());
+                AuthTokens tokens = authService.authenticate(request.getEmail(), request.getPassword());
                 return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
         @PostMapping("/refresh")
         public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_COOKIE) String refreshToken) {
-                AuthTokens tokens = service.rotateRefreshToken(refreshToken);
+                AuthTokens tokens = authService.rotateRefreshToken(refreshToken);
                 return withAuthCookies(tokens, ResponseEntity.noContent());
         }
 
         @PostMapping("/logout")
         public ResponseEntity<Void> logout(@CookieValue(name = REFRESH_COOKIE, required = false) String refreshToken) {
                 if (refreshToken != null) {
-                        service.revokeRefreshToken(refreshToken);
+                        authService.revokeRefreshToken(refreshToken);
                 }
                 return clearAuthCookies(ResponseEntity.noContent());
         }
