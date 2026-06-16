@@ -1,4 +1,5 @@
 import ProfileForm from "@/components/profile/ProfileForm"
+import ManagementTab from "@/components/management/ManagementTab" // <-- Импортируем новый компонент
 import { serverFetch } from "@/lib/fetch"
 import { UserProfile } from "@/types/user/UserProfile"
 import { redirect } from "next/navigation"
@@ -55,9 +56,7 @@ export default async function ProfilePage() {
 
                 {user.isAdmin && (
                     <TabsContent value="management" className="mt-6">
-                        <div className="p-4 border rounded-lg bg-card text-muted-foreground">
-                            Coming soon
-                        </div>
+                        <ManagementTab />
                     </TabsContent>
                 )}
             </Tabs>
