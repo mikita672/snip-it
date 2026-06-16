@@ -13,6 +13,7 @@ public class TreatmentDTOMapper {
 			.description(treatment.getDescription())
 			.durationMinutes(treatment.getDurationMinutes())
 			.price(treatment.getPrice())
+			.isActive(treatment.getIsActive())
 			.build();
 	}
 }

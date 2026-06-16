@@ -3,7 +3,11 @@ package com.snipit.backend.treatment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.snipit.backend.treatment.dto.TreatmentRequestDTO;
 
 @Service
 public class TreatmentService {
@@ -43,5 +47,31 @@ public class TreatmentService {
 		} else {
 			return treatmentRepository.findByNameContainsIgnoreCase(searchToken, pageRequest);
 		}
+	}
+
+	public Treatment createTreatment(TreatmentRequestDTO dto) {
+		Treatment treatment = new Treatment();
+		treatment.setName(dto.name());
+		treatment.setDescription(dto.description());
+		treatment.setDurationMinutes(dto.durationMinutes());
+		treatment.setPrice(dto.price());
+		return treatmentRepository.save(treatment);
+	}
+
+	public Treatment updateTreatment(Integer id, TreatmentRequestDTO dto) {
+		Treatment treatment = treatmentRepository.findById(id)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Treatment not found"));
+		treatment.setName(dto.name());
+		treatment.setDescription(dto.description());
+		treatment.setDurationMinutes(dto.durationMinutes());
+		treatment.setPrice(dto.price());
+		return treatmentRepository.save(treatment);
+	}
+
+	public Treatment toggleActive(Integer id) {
+		Treatment treatment = treatmentRepository.findById(id)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Treatment not found"));
+		treatment.setIsActive(!treatment.getIsActive());
+		return treatmentRepository.save(treatment);
 	}
 }
