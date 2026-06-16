@@ -32,7 +32,7 @@ export default async function ProfilePage() {
     const user: UserProfile = await response.json()
 
     return (
-        <div className="flex flex-col gap-8 md:px-24 md:py-12 py-6 px-4 max-w-7xl mx-auto">
+        <div className="flex flex-col gap-8 md:px-16 md:py-12 py-6 px-4 max-w-screen-2xl mx-auto">
             <div className="flex flex-col gap-2 text-center md:text-left">
                 <h1 className={`text-4xl ${bodoni.className}`}>Settings</h1>
                 <p className="text-muted-foreground">Manage your account and preferences.</p>
