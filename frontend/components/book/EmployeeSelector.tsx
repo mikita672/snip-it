@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect, onBack }: Props) {
+    const router = useRouter()
     const [employees, setEmployees] = useState<AvailableEmployee[]>([])
     const [selected, setSelected] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
@@ -32,6 +34,10 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
 
         fetch(`/api/availability/employees?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
+                if (res.status === 401) {
+                    router.push('/login')
+                    return Promise.reject()
+                }
                 if (!res.ok) {
                     throw new Error()
                 }
