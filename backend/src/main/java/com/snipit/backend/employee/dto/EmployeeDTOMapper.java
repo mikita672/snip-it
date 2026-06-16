@@ -15,6 +15,9 @@ public class EmployeeDTOMapper {
 			.email(employee.getEmail())
 			.phone(employee.getPhone())
 			.isActive(employee.getIsActive())
+			.treatmentIds(employee.getTreatments().stream()
+				.map(treatment -> treatment.getId())
+				.toList())
 			.treatmentsPreview(new EmployeeTreatmentsPreviewDTO(
 				employee.getTreatments().size(),
 				employee.getTreatments().stream()

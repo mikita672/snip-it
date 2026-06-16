@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import TreatmentTable from "@/components/management/TreatmentTable"
+import EmployeeTable from "@/components/management/EmployeeTable"
 
 type EntityType = 'reservations' | 'employees' | 'treatments'
 
@@ -37,7 +38,8 @@ export default function ManagementTab() {
 
             <main className="flex-1 min-w-0 py-2 md:py-0">
                 {selectedEntity === 'treatments' && <TreatmentTable />}
-                {selectedEntity !== 'treatments' && (
+                {selectedEntity === 'employees' && <EmployeeTable />}
+                {selectedEntity === 'reservations' && (
                     <div className="flex items-center justify-center py-12">
                         <div className="text-center">
                             <h3 className="text-xl font-semibold capitalize mb-1">{selectedEntity}</h3>

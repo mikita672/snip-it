@@ -1,5 +1,7 @@
 package com.snipit.backend.employee.dto;
 
+import java.util.List;
+
 import lombok.Builder;
 
 @Builder
@@ -11,5 +13,6 @@ public record EmployeePreviewDTO(
 	String email,
 	String phone,
 	Boolean isActive,
+	List<Integer> treatmentIds,
 	EmployeeTreatmentsPreviewDTO treatmentsPreview
 ) {}
