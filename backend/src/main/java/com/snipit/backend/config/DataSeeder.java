@@ -152,13 +152,16 @@ public class DataSeeder {
                     int treatmentCount = 1 + random.nextInt(2);
                     Set<Treatment> selectedTreatments = new java.util.HashSet<>();
                     int duration = 0;
+                    java.math.BigDecimal totalPrice = java.math.BigDecimal.ZERO;
                     for (int j = 0; j < treatmentCount; j++) {
                         Treatment rt = allTreatments.get(random.nextInt(allTreatments.size()));
                         selectedTreatments.add(rt);
                         duration += rt.getDurationMinutes();
+                        totalPrice = totalPrice.add(rt.getPrice());
                     }
                     r.setTreatments(selectedTreatments);
                     r.setSumDuration(duration);
+                    r.setTotalPrice(totalPrice);
 
                     reservationRepository.save(r);
                 }

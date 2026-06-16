@@ -137,16 +137,20 @@ public class ReservationService {
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
         int sumDuration = treatments
-                .stream()
-                .mapToInt(Treatment::getDurationMinutes)
-                .sum();
+            .stream()
+            .mapToInt(Treatment::getDurationMinutes)
+            .sum();
+
+        java.math.BigDecimal totalPrice = treatments.stream()
+            .map(Treatment::getPrice)
+            .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
         reservation.setEmployee(employee);
         reservation.setTreatments(treatments);
         reservation.setSumDuration(sumDuration);
-
+        reservation.setTotalPrice(totalPrice);
         if (user.getReputation() >= REPUTATION_AUTO_CONFIRM_TRESHOLD) {
             reservation.setStatus("Confirmed");
         } else {

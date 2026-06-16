@@ -176,21 +176,28 @@ export default function AppointmentsTable({ initialData }: Props) {
                 </div>
             </div>
 
-            <div className="rounded-md border bg-card">
-                <Table>
+            <div className="rounded-md border bg-card overflow-hidden">
+                <Table className="table-fixed">
                     <TableHeader>
                         <TableRow>
                             <TableHead 
-                                className="w-50 cursor-pointer hover:bg-muted/50 transition-colors"
+                                className="w-45 cursor-pointer hover:bg-muted/50 transition-colors"
                                 onClick={() => handleSort('reservationTime')}
                             >
                                 <div className="flex items-center">
                                     DATE <SortIcon field="reservationTime" />
                                 </div>
                             </TableHead>
-                            <TableHead>SERVICES</TableHead>
                             <TableHead 
-                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                className="w-62.5 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('treatments.name')}
+                            >
+                                <div className="flex items-center">
+                                    SERVICES <SortIcon field="treatments.name" />
+                                </div>
+                            </TableHead>
+                            <TableHead 
+                                className="w-37.5 cursor-pointer hover:bg-muted/50 transition-colors"
                                 onClick={() => handleSort('employee.firstName')}
                             >
                                 <div className="flex items-center">
@@ -198,16 +205,30 @@ export default function AppointmentsTable({ initialData }: Props) {
                                 </div>
                             </TableHead>
                             <TableHead 
-                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                className="w-27.5 cursor-pointer hover:bg-muted/50 transition-colors"
                                 onClick={() => handleSort('sumDuration')}
                             >
                                 <div className="flex items-center">
                                     DURATION <SortIcon field="sumDuration" />
                                 </div>
                             </TableHead>
-                            <TableHead>TOTAL</TableHead>
-                            <TableHead>STATUS</TableHead>
-                            <TableHead className="text-center">ACTIONS</TableHead>
+                            <TableHead 
+                                className="w-25 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('totalPrice')}
+                            >
+                                <div className="flex items-center">
+                                    TOTAL <SortIcon field="totalPrice" />
+                                </div>
+                            </TableHead>
+                            <TableHead 
+                                className="w-30 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('status')}
+                            >
+                                <div className="flex items-center">
+                                    STATUS <SortIcon field="status" />
+                                </div>
+                            </TableHead>
+                            <TableHead className="w-25 text-center">ACTIONS</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -225,18 +246,20 @@ export default function AppointmentsTable({ initialData }: Props) {
 
                                 return (
                                     <TableRow key={res.id}>
-                                        <TableCell>
+                                        <TableCell className="truncate">
                                             <div className="font-medium">{dateStr}</div>
                                             <div className="text-sm text-muted-foreground">{timeStr}</div>
                                         </TableCell>
-                                        <TableCell>{res.treatments.join(', ')}</TableCell>
-                                        <TableCell>{res.employeeName}</TableCell>
-                                        <TableCell>{res.durationMinutes} min</TableCell>
-                                        <TableCell>${res.totalPrice}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="truncate" title={res.treatments.join(', ')}>
+                                            {res.treatments.join(', ')}
+                                        </TableCell>
+                                        <TableCell className="truncate">{res.employeeName}</TableCell>
+                                        <TableCell className="truncate">{res.durationMinutes} min</TableCell>
+                                        <TableCell className="truncate">${res.totalPrice}</TableCell>
+                                        <TableCell className="truncate">
                                             {getStatusBadge(res.status)}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <div className="flex items-center justify-center gap-4">
                                                 {res.status.toLowerCase().includes('pending') && (
                                                     <AlertDialog>
