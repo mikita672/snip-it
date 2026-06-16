@@ -10,6 +10,7 @@ import com.snipit.backend.employee.EmployeeRepository;
 import com.snipit.backend.exceptions.ResourceNotFoundException;
 import com.snipit.backend.treatment.TreatmentRepository;
 import com.snipit.backend.user.User;
+import com.snipit.backend.user.UserRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,24 +28,30 @@ import com.snipit.backend.reservation.availability.AvailableEmployeeDTO;
 
 @Service
 public class ReservationService {
+    private final int REPUTATION_CANCELED_PENALTY = 20;
+    private final int REPUTATION_COMPLETED_BONUS = 10;
+    private final int REPUTATION_AUTO_CONFIRM_TRESHOLD = 80;
 
     private final ReservationMapper reservationMapper;
     private final ReservationRepository reservationRepository;
     private final EmployeeRepository employeeRepository;
     private final TreatmentRepository treatmentRepository;
     private final AvailabilityService availabilityService;
+    private final UserRepository userRepository;
 
     public ReservationService(
             EmployeeRepository employeeRepository,
             TreatmentRepository treatmentRepository,
             ReservationMapper reservationMapper,
             ReservationRepository reservationRepository,
-            AvailabilityService availabilityService) {
+            AvailabilityService availabilityService,
+            UserRepository userRepository) {
         this.employeeRepository = employeeRepository;
         this.treatmentRepository = treatmentRepository;
         this.reservationMapper = reservationMapper;
         this.reservationRepository = reservationRepository;
         this.availabilityService = availabilityService;
+        this.userRepository = userRepository;
     }
 
     public List<ReservationResponseDTO> findAllReservations() {
@@ -81,28 +88,38 @@ public class ReservationService {
     @Transactional
     public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User user) {
         Employee employee = employeeRepository.findById(dto.employeeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 
         List<AvailableEmployeeDTO> availableEmployees = availabilityService.getAvailableEmployees(
-                new ArrayList<>(dto.treatmentIds()), dto.reservationTime()
+            new ArrayList<>(dto.treatmentIds()), dto.reservationTime()
         );
 
-        boolean isAvailable = availableEmployees.stream()
-                .anyMatch(e -> e.id().equals(dto.employeeId()));
+        boolean isAvailable = availableEmployees
+            .stream()
+            .anyMatch(e -> e.id()
+            .equals(dto.employeeId()));
 
         if (!isAvailable) {
             throw new IllegalArgumentException("The selected time slot is not available for this employee.");
         }
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
-        int sumDuration = treatments.stream().mapToInt(Treatment::getDurationMinutes).sum();
+        int sumDuration = treatments
+            .stream()
+            .mapToInt(Treatment::getDurationMinutes)
+            .sum();
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
         reservation.setEmployee(employee);
         reservation.setTreatments(treatments);
         reservation.setSumDuration(sumDuration);
-        reservation.setStatus("Pending");
+
+        if (user.getReputation() >= REPUTATION_AUTO_CONFIRM_TRESHOLD) {
+            reservation.setStatus("Confirmed");
+        } else {
+            reservation.setStatus("Pending");
+        }
 
         return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
     }
@@ -120,8 +137,18 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
 
-        if (status.equals("Cancelled")) {
-            
+        switch (status) {
+            case "Cancelled" -> {
+                int reputation = Math.max(0, user.getReputation() - REPUTATION_CANCELED_PENALTY);
+                user.setReputation(reputation);
+                userRepository.save(user);
+            }
+            case "Completed" -> {
+                int reputation = Math.min(100, user.getReputation() + REPUTATION_COMPLETED_BONUS);
+                user.setReputation(reputation);
+                userRepository.save(user);
+            }
+            default -> {}
         }
 
         return reservationMapper.toResponseDTO(saved);
