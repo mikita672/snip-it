@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface Props {
     initialData: UserReservationsPage;
@@ -17,13 +19,14 @@ export default function AppointmentsTable({ initialData }: Props) {
     const [loadingId, setLoadingId] = useState<number | null>(null);
 
     const handleCancel = async (id: number) => {
-        if (!confirm('Are you sure you want to cancel this appointment?')) { return; }
         setLoadingId(id);
         try {
             const response = await fetch(`/api/reservation/${id}?status=Cancelled`, {
                 method: 'PATCH',
             });
-            if (!response.ok) { throw new Error(); }
+            if (!response.ok) {
+                throw new Error();
+            }
             toast.success('Appointment cancelled successfully');
             router.refresh();
         } catch {
@@ -62,12 +65,13 @@ export default function AppointmentsTable({ initialData }: Props) {
                             <TableHead>DURATION</TableHead>
                             <TableHead>TOTAL</TableHead>
                             <TableHead>STATUS</TableHead>
+                            <TableHead className="text-center">ACTIONS</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {initialData.reservations.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={7} className="h-24 text-center">
                                     No appointments found.
                                 </TableCell>
                             </TableRow>
@@ -88,16 +92,34 @@ export default function AppointmentsTable({ initialData }: Props) {
                                         <TableCell>{res.durationMinutes} min</TableCell>
                                         <TableCell>${res.totalPrice}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-4">
-                                                {getStatusBadge(res.status)}
+                                            {getStatusBadge(res.status)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center justify-center gap-4">
                                                 {res.status.toLowerCase().includes('pending') && (
-                                                    <button 
-                                                        disabled={loadingId === res.id}
-                                                        onClick={() => handleCancel(res.id)}
-                                                        className="text-sm text-destructive hover:underline disabled:opacity-50"
-                                                    >
-                                                        {loadingId === res.id ? '...' : 'Cancel'}
-                                                    </button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                disabled={loadingId === res.id}
+                                                                className="text-sm text-destructive hover:underline disabled:opacity-50 px-0 hover:bg-transparent h-auto"
+                                                            >
+                                                                {loadingId === res.id ? '...' : 'Cancel'}
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Are you sure you want to cancel this appointment? This action cannot be undone.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Don't cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleCancel(res.id)}>Yes, cancel</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 )}
                                             </div>
                                         </TableCell>
@@ -117,17 +139,17 @@ export default function AppointmentsTable({ initialData }: Props) {
                     <Pagination className="mx-0 w-auto">
                         <PaginationContent>
                             <PaginationItem>
-                                <PaginationPrevious 
+                                <PaginationPrevious
                                     text=""
-                                    href={`?page=${Math.max(0, initialData.currentPage - 1)}`} 
-                                    isActive={initialData.currentPage === 0} 
+                                    href={`?page=${Math.max(0, initialData.currentPage - 1)}`}
+                                    isActive={initialData.currentPage === 0}
                                     className={initialData.currentPage === 0 ? "pointer-events-none opacity-50" : ""}
                                 />
                             </PaginationItem>
-                            
+
                             {Array.from({ length: initialData.totalPages }).map((_, i) => (
                                 <PaginationItem key={i}>
-                                    <PaginationLink 
+                                    <PaginationLink
                                         href={`?page=${i}`}
                                         isActive={initialData.currentPage === i}
                                     >
@@ -137,7 +159,7 @@ export default function AppointmentsTable({ initialData }: Props) {
                             ))}
 
                             <PaginationItem>
-                                <PaginationNext 
+                                <PaginationNext
                                     text=""
                                     href={`?page=${Math.min(initialData.totalPages - 1, initialData.currentPage + 1)}`}
                                     isActive={initialData.currentPage === initialData.totalPages - 1}

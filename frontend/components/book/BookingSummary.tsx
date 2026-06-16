@@ -1,4 +1,5 @@
 import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 import { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
 import { AvailableEmployee } from './EmployeeSelector'
 
@@ -87,13 +88,13 @@ export default function BookingSummary({ selectedTreatments, selectedTime, selec
                         </>
                     )}
 
-                    <button
+                    <Button
                         disabled={!canContinue || loading}
                         onClick={onContinue}
-                        className="w-full bg-primary text-primary-foreground rounded-xl py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full rounded-xl py-2 text-sm font-semibold transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Confirming…' : buttonLabel}
-                    </button>
+                    </Button>
                 </>
             )}
         </div>
