@@ -9,9 +9,11 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
 import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Field } from '@/components/ui/field';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 
 interface Props {
     initialData: UserReservationsPage;
@@ -116,20 +118,31 @@ export default function AppointmentsTable({ initialData }: Props) {
 
     return (
         <div className="w-full space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <form action={handleSearch} className="relative max-w-sm w-full">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        name="search"
-                        type="search"
-                        placeholder="Search appointments..."
-                        className="pl-9"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                    />
+            <div className="flex flex-col md:flex-row items-end justify-between gap-4">
+                <form action={handleSearch} className="w-full max-w-md">
+                    <Field className="bg-card">
+                        <ButtonGroup>
+                            <InputGroup>
+                                <InputGroupAddon>
+                                    <Search className="size-4" />
+                                </InputGroupAddon>
+                                <InputGroupInput
+                                    name="search"
+                                    type="search"
+                                    placeholder="Search appointments..."
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                />
+                            </InputGroup>
+                            <Button
+                                className="cursor-pointer hover:opacity-75"
+                                type="submit"
+                            >Search</Button>
+                        </ButtonGroup>
+                    </Field>
                 </form>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full md:w-auto">
                     <Select
                         value={currentStatus}
                         onValueChange={(value) => updateParams({ status: value })}
