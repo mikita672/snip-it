@@ -50,6 +50,7 @@ export default function TreatmentTable() {
                 sortBy,
                 sortDescending: String(sortDesc),
                 searchToken: debouncedSearch,
+                activeOnly: 'false',
             })
             const res = await fetch(`/api/treatment/preview?${params}`)
             if (!res.ok) return

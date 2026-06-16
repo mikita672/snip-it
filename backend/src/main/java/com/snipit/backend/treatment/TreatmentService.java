@@ -35,17 +35,26 @@ public class TreatmentService {
 		int pageNumber,
 		SortBy sortBy,
 		boolean sortDescending,
-		String searchToken
+		String searchToken,
+		boolean activeOnly
 	) {
 		Sort sort = Sort.by(sortBy.asString());
 		if (sortDescending) {
 			sort = sort.descending();
 		}
 		PageRequest pageRequest = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-		if (searchToken.isEmpty()) {
-			return treatmentRepository.findAll(pageRequest);
+		if (activeOnly) {
+			if (searchToken.isEmpty()) {
+				return treatmentRepository.findByIsActiveTrue(pageRequest);
+			} else {
+				return treatmentRepository.findByNameContainsIgnoreCaseAndIsActiveTrue(searchToken, pageRequest);
+			}
 		} else {
-			return treatmentRepository.findByNameContainsIgnoreCase(searchToken, pageRequest);
+			if (searchToken.isEmpty()) {
+				return treatmentRepository.findAll(pageRequest);
+			} else {
+				return treatmentRepository.findByNameContainsIgnoreCase(searchToken, pageRequest);
+			}
 		}
 	}
 

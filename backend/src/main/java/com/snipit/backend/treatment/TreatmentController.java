@@ -43,13 +43,16 @@ public class TreatmentController {
 		@RequestParam(defaultValue = "false")
 		boolean sortDescending,
 		@RequestParam(defaultValue = "")
-		String searchToken
+		String searchToken,
+		@RequestParam(defaultValue = "true")
+		boolean activeOnly
 	) {
 		Page<Treatment> page = treatmentService.searchTreatments(
 			pageNumber - 1,
 			sortBy,
 			sortDescending,
-			searchToken.trim()
+			searchToken.trim(),
+			activeOnly
 		);
 		List<TreatmentPreviewDTO> treatments = page.stream()
 			.map(treatmentDTOMapper::previewDTOFromEntity)
