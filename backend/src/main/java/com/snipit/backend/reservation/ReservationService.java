@@ -15,9 +15,13 @@ import com.snipit.backend.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,36 +72,59 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public UserReservationsPageDTO getUserReservations(User user, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Reservation> reservationPage = reservationRepository.findByUserOrderByReservationTimeDesc(user, pageable);
-        
+    public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction,
+            String search) {
+        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        Specification<Reservation> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("user"), user));
+
+            if (search != null && !search.isEmpty()) {
+                String searchLower = "%" + search.toLowerCase() + "%";
+                List<Predicate> searchPredicates = new ArrayList<>();
+
+                searchPredicates.add(cb.like(cb.lower(root.get("employee").get("firstName")), searchLower));
+                searchPredicates.add(cb.like(cb.lower(root.get("employee").get("lastName")), searchLower));
+                searchPredicates.add(cb.like(cb.lower(root.get("status")), searchLower));
+                Join<Reservation, Treatment> treatmentsJoin = root.join("treatments");
+                searchPredicates.add(cb.like(cb.lower(treatmentsJoin.get("name")), searchLower));
+
+                predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
+                query.distinct(true);
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Reservation> reservationPage = reservationRepository.findAll(spec, pageable);
+
         List<UserReservationPreviewDTO> dtos = reservationPage.getContent()
                 .stream()
                 .map(reservationMapper::toUserReservationPreviewDTO)
                 .toList();
-                
+
         return new UserReservationsPageDTO(
-            dtos,
-            reservationPage.getTotalPages(),
-            reservationPage.getTotalElements(),
-            reservationPage.getNumber()
-        );
+                dtos,
+                reservationPage.getTotalPages(),
+                reservationPage.getTotalElements(),
+                reservationPage.getNumber());
     }
 
     @Transactional
     public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User user) {
         Employee employee = employeeRepository.findById(dto.employeeId())
-            .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 
         List<AvailableEmployeeDTO> availableEmployees = availabilityService.getAvailableEmployees(
-            new ArrayList<>(dto.treatmentIds()), dto.reservationTime()
-        );
+                new ArrayList<>(dto.treatmentIds()), dto.reservationTime());
 
         boolean isAvailable = availableEmployees
-            .stream()
-            .anyMatch(e -> e.id()
-            .equals(dto.employeeId()));
+                .stream()
+                .anyMatch(e -> e.id()
+                        .equals(dto.employeeId()));
 
         if (!isAvailable) {
             throw new IllegalArgumentException("The selected time slot is not available for this employee.");
@@ -105,9 +132,9 @@ public class ReservationService {
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
         int sumDuration = treatments
-            .stream()
-            .mapToInt(Treatment::getDurationMinutes)
-            .sum();
+                .stream()
+                .mapToInt(Treatment::getDurationMinutes)
+                .sum();
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
@@ -148,7 +175,8 @@ public class ReservationService {
                 user.setReputation(reputation);
                 userRepository.save(user);
             }
-            default -> {}
+            default -> {
+            }
         }
 
         return reservationMapper.toResponseDTO(saved);

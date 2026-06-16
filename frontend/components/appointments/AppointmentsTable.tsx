@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { UserReservationsPage, UserReservationPreview } from '@/types/reservation/UserReservationPreview';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
 
 interface Props {
     initialData: UserReservationsPage;
@@ -16,7 +18,45 @@ interface Props {
 
 export default function AppointmentsTable({ initialData }: Props) {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [isPending, startTransition] = useTransition();
     const [loadingId, setLoadingId] = useState<number | null>(null);
+    const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
+
+    const currentSort = searchParams.get('sort') || 'reservationTime';
+    const currentDirection = searchParams.get('direction') || 'desc';
+
+    const updateParams = (updates: Record<string, string | null>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === null) {
+                params.delete(key);
+            } else {
+                params.set(key, value);
+            }
+        });
+        if (!updates.page) params.set('page', '0');
+        
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}`);
+        });
+    };
+
+    const handleSearch = (formData: FormData) => {
+        const query = formData.get('search') as string;
+        updateParams({ search: query || null });
+    };
+
+    const handleSort = (field: string) => {
+        const direction = currentSort === field && currentDirection === 'asc' ? 'desc' : 'asc';
+        updateParams({ sort: field, direction });
+    };
+
+    const SortIcon = ({ field }: { field: string }) => {
+        if (currentSort !== field) return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
+        return currentDirection === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />;
+    };
 
     const handleCancel = async (id: number) => {
         setLoadingId(id);
@@ -58,15 +98,50 @@ export default function AppointmentsTable({ initialData }: Props) {
     const endItem = Math.min((initialData.currentPage + 1) * 5, initialData.totalElements);
 
     return (
-        <div className="w-full">
+        <div className="w-full space-y-4">
+            <div className="flex items-center justify-between gap-4">
+                <form action={handleSearch} className="relative max-w-sm w-full">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        name="search"
+                        type="search"
+                        placeholder="Search appointments..."
+                        className="pl-9"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                    />
+                </form>
+            </div>
+
             <div className="rounded-md border bg-card">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[200px]">DATE</TableHead>
+                            <TableHead 
+                                className="w-50 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('reservationTime')}
+                            >
+                                <div className="flex items-center">
+                                    DATE <SortIcon field="reservationTime" />
+                                </div>
+                            </TableHead>
                             <TableHead>SERVICES</TableHead>
-                            <TableHead>STYLIST</TableHead>
-                            <TableHead>DURATION</TableHead>
+                            <TableHead 
+                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('employee.firstName')}
+                            >
+                                <div className="flex items-center">
+                                    STYLIST <SortIcon field="employee.firstName" />
+                                </div>
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('sumDuration')}
+                            >
+                                <div className="flex items-center">
+                                    DURATION <SortIcon field="sumDuration" />
+                                </div>
+                            </TableHead>
                             <TableHead>TOTAL</TableHead>
                             <TableHead>STATUS</TableHead>
                             <TableHead className="text-center">ACTIONS</TableHead>
@@ -145,17 +220,18 @@ export default function AppointmentsTable({ initialData }: Props) {
                             <PaginationItem>
                                 <PaginationPrevious
                                     text=""
-                                    href={`?page=${Math.max(0, initialData.currentPage - 1)}`}
+                                    onClick={() => updateParams({ page: Math.max(0, initialData.currentPage - 1).toString() })}
                                     isActive={initialData.currentPage === 0}
-                                    className={initialData.currentPage === 0 ? "pointer-events-none opacity-50" : ""}
+                                    className={initialData.currentPage === 0 ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
                                 />
                             </PaginationItem>
 
                             {Array.from({ length: initialData.totalPages }).map((_, i) => (
                                 <PaginationItem key={i}>
                                     <PaginationLink
-                                        href={`?page=${i}`}
+                                        onClick={() => updateParams({ page: i.toString() })}
                                         isActive={initialData.currentPage === i}
+                                        className="cursor-pointer"
                                     >
                                         {i + 1}
                                     </PaginationLink>
@@ -165,9 +241,9 @@ export default function AppointmentsTable({ initialData }: Props) {
                             <PaginationItem>
                                 <PaginationNext
                                     text=""
-                                    href={`?page=${Math.min(initialData.totalPages - 1, initialData.currentPage + 1)}`}
+                                    onClick={() => updateParams({ page: Math.min(initialData.totalPages - 1, initialData.currentPage + 1).toString() })}
                                     isActive={initialData.currentPage === initialData.totalPages - 1}
-                                    className={initialData.currentPage === initialData.totalPages - 1 ? "pointer-events-none opacity-50" : ""}
+                                    className={initialData.currentPage === initialData.totalPages - 1 ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
                                 />
                             </PaginationItem>
                         </PaginationContent>

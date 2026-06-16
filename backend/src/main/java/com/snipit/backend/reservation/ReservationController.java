@@ -38,8 +38,11 @@ public class ReservationController {
     public UserReservationsPageDTO getMyAppointments(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        return reservationService.getUserReservations(user, page, size);
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "reservationTime") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String search) {
+        return reservationService.getUserReservations(user, page, size, sort, direction, search);
     }
 
     @GetMapping("/{id}")
