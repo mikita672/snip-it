@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { UserReservationsPage, UserReservationPreview } from '@/types/reservation/UserReservationPreview';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,17 @@ export default function AppointmentsTable({ initialData }: Props) {
     const currentDirection = searchParams.get('direction') || 'desc';
     const currentStatus = searchParams.get('status') || 'all';
     const currentSize = searchParams.get('size') || '5';
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const currentSearchParam = searchParams.get('search') || '';
+            if (searchValue !== currentSearchParam) {
+                updateParams({ search: searchValue || null });
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [searchValue]);
 
     const updateParams = (updates: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());
