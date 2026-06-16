@@ -69,7 +69,7 @@ export const proxy = async (request: NextRequest) => {
     });
 
     if (!refresh.ok) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return new NextResponse(null, { status: 401 });
     }
 
     const newCookies = refresh.headers.getSetCookie();

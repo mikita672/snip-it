@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
@@ -20,6 +21,7 @@ function toISODate(d: Date): string {
 }
 
 export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) {
+    const router = useRouter()
     const [date, setDate] = useState<Date | undefined>(undefined)
     const [selectedSlot, setSelectedSlot] = useState('')
     const [slots, setSlots] = useState<string[]>([])
@@ -45,6 +47,10 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
                 params.set('endDate', toISODate(end))
 
                 const res = await fetch(`/api/availability/days?${params.toString()}`, { cache: 'no-store' })
+                if (res.status === 401) {
+                    router.push('/login')
+                    return
+                }
                 if (res.ok) {
                     const days = await res.json() as string[]
                     setAvailableDays(new Set(days))
@@ -75,6 +81,10 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
 
         fetch(`/api/availability?${params.toString()}`, { cache: 'no-store' })
             .then(res => {
+                if (res.status === 401) {
+                    router.push('/login')
+                    return Promise.reject()
+                }
                 if (!res.ok) {
                     throw new Error()
                 }

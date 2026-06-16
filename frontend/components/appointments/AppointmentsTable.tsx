@@ -24,6 +24,10 @@ export default function AppointmentsTable({ initialData }: Props) {
             const response = await fetch(`/api/reservation/${id}?status=Cancelled`, {
                 method: 'PATCH',
             });
+            if (response.status === 401) {
+                router.push('/login');
+                return;
+            }
             if (!response.ok) {
                 throw new Error();
             }
