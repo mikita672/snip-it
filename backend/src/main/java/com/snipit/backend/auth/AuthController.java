@@ -1,6 +1,7 @@
 package com.snipit.backend.auth;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -24,9 +25,14 @@ public class AuthController {
         private final AuthService authService;
 
         @PostMapping("/sign-up")
-        public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequestDTO request) {
-                AuthTokens tokens = authService.register(request.getEmail(), request.getPassword());
-                return withAuthCookies(tokens, ResponseEntity.noContent());
+        public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
+                try {
+                        AuthTokens tokens = authService.register(request.getEmail(), request.getPassword());
+                        return withAuthCookies(tokens, ResponseEntity.noContent());
+                } catch (EmailAlreadyExistsException e) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                        .body(java.util.Map.of("error", e.getMessage()));
+                }
         }
 
         @PostMapping("/sign-in")
