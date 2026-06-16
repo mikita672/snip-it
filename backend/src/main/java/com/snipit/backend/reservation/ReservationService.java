@@ -119,6 +119,11 @@ public class ReservationService {
         reservation.setStatus(status);
 
         Reservation saved = reservationRepository.save(reservation);
+
+        if (status.equals("Cancelled")) {
+            
+        }
+
         return reservationMapper.toResponseDTO(saved);
     }
 }

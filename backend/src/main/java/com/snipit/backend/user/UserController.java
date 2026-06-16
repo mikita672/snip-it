@@ -11,11 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/user")
 @Tag(name = "User", description = "User management endpoints")
 public class UserController {
-
-    private final UserRepository userRepository;
-
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    private UserService userService;
+    
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/profile")
@@ -33,11 +32,7 @@ public class UserController {
     public UserProfileDTO updateProfile(
             @AuthenticationPrincipal User user,
             @RequestBody @Valid UpdateProfileRequestDTO dto) {
-        user.setFirstName(dto.firstName());
-        user.setLastName(dto.lastName());
-        user.setEmail(dto.email());
-        user.setPhone(dto.phone());
-        User saved = userRepository.save(user);
+        User saved = userService.updateUser(user, dto.firstName(), dto.lastName(), dto.email(), dto.phone());
         return new UserProfileDTO(
             saved.getId(),
             saved.getEmail(),
