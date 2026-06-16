@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from "react"
+import TreatmentTable from "@/components/management/TreatmentTable"
 
 type EntityType = 'reservations' | 'employees' | 'treatments'
 
@@ -34,15 +35,18 @@ export default function ManagementTab() {
                 })}
             </aside>
 
-            <main className="flex-1 flex items-center justify-center py-12 md:py-0">
-                <div className="text-center animate-fade-in">
-                    <h3 className="text-xl font-semibold capitalize mb-1">
-                        {selectedEntity}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                        Management panel for {selectedEntity} is under construction.
-                    </p>
-                </div>
+            <main className="flex-1 min-w-0 py-2 md:py-0">
+                {selectedEntity === 'treatments' && <TreatmentTable />}
+                {selectedEntity !== 'treatments' && (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <h3 className="text-xl font-semibold capitalize mb-1">{selectedEntity}</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Management panel for {selectedEntity} is under construction.
+                            </p>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     )
