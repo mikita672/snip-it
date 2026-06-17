@@ -32,7 +32,10 @@ export default function TreatmentTable() {
     const [sortDesc, setSortDesc] = useState(false)
     const [loading, setLoading] = useState(false)
     const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null)
+    const [isCreating, setIsCreating] = useState(false)
     const [editForm, setEditForm] = useState({ name: '', description: '', durationMinutes: '', price: '' })
+
+    const emptyForm = { name: '', description: '', durationMinutes: '', price: '' }
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -80,8 +83,15 @@ export default function TreatmentTable() {
         }
     }
 
+    const openCreate = () => {
+        setEditForm(emptyForm)
+        setIsCreating(true)
+        setEditingTreatment(null)
+    }
+
     const openEdit = (treatment: Treatment) => {
         setEditingTreatment(treatment)
+        setIsCreating(false)
         setEditForm({
             name: treatment.name,
             description: treatment.description ?? '',
@@ -90,10 +100,16 @@ export default function TreatmentTable() {
         })
     }
 
-    const handleEditSave = async () => {
-        if (!editingTreatment) return
-        const res = await fetch(`/api/treatment/${editingTreatment.id}`, {
-            method: 'PUT',
+    const closeModal = () => {
+        setEditingTreatment(null)
+        setIsCreating(false)
+    }
+
+    const handleSave = async () => {
+        const url = isCreating ? '/api/treatment' : `/api/treatment/${editingTreatment!.id}`
+        const method = isCreating ? 'POST' : 'PUT'
+        const res = await fetch(url, {
+            method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name: editForm.name,
@@ -103,9 +119,8 @@ export default function TreatmentTable() {
             }),
         })
         if (res.ok) {
-            const updated: Treatment = await res.json()
-            setTreatments(prev => prev.map(t => t.id === updated.id ? updated : t))
-            setEditingTreatment(null)
+            await fetchTreatments()
+            closeModal()
         }
     }
 
@@ -118,7 +133,10 @@ export default function TreatmentTable() {
                     onChange={e => setSearch(e.target.value)}
                     className="max-w-sm"
                 />
-                <div className="flex items-center gap-2 ml-auto">
+                <Button className="ml-auto" onClick={openCreate}>
+                    Add new
+                </Button>
+                <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground whitespace-nowrap">Sort:</span>
                     <Select
                         value={`${sortBy}_${sortDesc ? 'desc' : 'asc'}`}
@@ -228,13 +246,13 @@ export default function TreatmentTable() {
                 </Pagination>
             )}
 
-            {editingTreatment && (
+            {(isCreating || editingTreatment) && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    onClick={e => { if (e.target === e.currentTarget) setEditingTreatment(null) }}
+                    onClick={e => { if (e.target === e.currentTarget) closeModal() }}
                 >
                     <div className="bg-popover rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl ring-1 ring-foreground/10 flex flex-col gap-4">
-                        <h2 className="text-lg font-semibold">Edit Treatment</h2>
+                        <h2 className="text-lg font-semibold">{isCreating ? 'Add Treatment' : 'Edit Treatment'}</h2>
                         <div className="flex flex-col gap-3">
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Name
@@ -271,10 +289,10 @@ export default function TreatmentTable() {
                             </label>
                         </div>
                         <div className="flex gap-2 justify-end">
-                            <Button variant="outline" onClick={() => setEditingTreatment(null)}>
+                            <Button variant="outline" onClick={closeModal}>
                                 Cancel
                             </Button>
-                            <Button onClick={handleEditSave}>
+                            <Button onClick={handleSave}>
                                 Save
                             </Button>
                         </div>
