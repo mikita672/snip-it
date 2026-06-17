@@ -51,7 +51,7 @@ export default function EmployeeTable() {
         const all: TreatmentPreview[] = []
         let page = 1
         while (true) {
-            const res = await fetch(`/api/treatment/preview?pageNumber=${page}&activeOnly=false&sortBy=PRICE`)
+            const res = await fetch(`/api/treatment?pageNumber=${page}&sortBy=PRICE`)
             if (!res.ok) break
             const data: { treatments: TreatmentPreview[]; totalPages: number } = await res.json()
             all.push(...data.treatments)
