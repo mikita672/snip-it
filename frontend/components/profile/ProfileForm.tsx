@@ -53,7 +53,13 @@ export default function ProfileForm({ user }: Props) {
                 body: JSON.stringify(values),
             })
 
-            if (!response.ok) throw new Error()
+            if (response.status === 401) {
+                router.push('/login')
+                return
+            }
+            if (!response.ok) {
+                throw new Error()
+            }
 
             toast.success("Profile updated successfully")
             router.refresh()

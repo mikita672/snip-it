@@ -49,8 +49,10 @@ function Login() {
             toast.success("Logged in successfully");
             router.push("/");
             router.refresh();
+        } else if (response.status === 401 || response.status === 403) {
+            toast.error("Invalid email or password.");
         } else {
-            toast.error("Failed to log in");
+            toast.error("Failed to log in. Please try again.");
         }
     }
 
@@ -129,8 +131,11 @@ function Login() {
                     <Button
                         form="sign-in-form"
                         type="submit"
-                        className={`w-full ${form.formState.isValid ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
-                    >Log in</Button>
+                        disabled={form.formState.isSubmitting || !form.formState.isValid}
+                        className={`w-full ${form.formState.isValid && !form.formState.isSubmitting ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
+                    >
+                        {form.formState.isSubmitting ? "Logging in..." : "Log in"}
+                    </Button>
 
                     <div className="flex flex-col gap-2 items-center">
                         <Link href="/register" className="underline">Don&apos;t have an account?</Link>

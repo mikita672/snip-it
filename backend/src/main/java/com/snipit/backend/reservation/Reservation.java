@@ -39,6 +39,9 @@ public class Reservation {
     @Column(name = "sum_duration")
     private Integer sumDuration;
 
+    @Column(name = "total_price", precision = 10, scale = 2)
+    private java.math.BigDecimal totalPrice;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

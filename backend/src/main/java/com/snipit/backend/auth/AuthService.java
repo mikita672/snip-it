@@ -32,6 +32,10 @@ public class AuthService {
     private final AuthProperties authProperties;
 
     public AuthTokens register(String email, String password) {
+        if (repository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException(email);
+        }
+
         User user = new User();
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(password));
@@ -80,10 +84,10 @@ public class AuthService {
         extra.put("userId", user.getId());
         extra.put("isAdmin", user.getIsAdmin());
         String newAccess = jwtService.generateToken(extra, builder()
-            .username(user.getEmail())
-            .password(user.getPasswordHash())
-            .roles(user.getIsAdmin() ? "ADMIN" : "USER")
-            .build());
+                .username(user.getEmail())
+                .password(user.getPasswordHash())
+                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
+                .build());
         String newRefresh = issueRefreshToken(user);
         return new AuthTokens(newAccess, newRefresh);
     }

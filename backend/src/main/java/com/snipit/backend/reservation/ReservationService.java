@@ -10,13 +10,19 @@ import com.snipit.backend.employee.EmployeeRepository;
 import com.snipit.backend.exceptions.ResourceNotFoundException;
 import com.snipit.backend.treatment.TreatmentRepository;
 import com.snipit.backend.user.User;
+import com.snipit.backend.user.UserRepository;
 
+import java.math.BigDecimal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,24 +33,30 @@ import com.snipit.backend.reservation.availability.AvailableEmployeeDTO;
 
 @Service
 public class ReservationService {
+    private final int REPUTATION_CANCELED_PENALTY = 20;
+    private final int REPUTATION_COMPLETED_BONUS = 10;
+    private final int REPUTATION_AUTO_CONFIRM_TRESHOLD = 80;
 
     private final ReservationMapper reservationMapper;
     private final ReservationRepository reservationRepository;
     private final EmployeeRepository employeeRepository;
     private final TreatmentRepository treatmentRepository;
     private final AvailabilityService availabilityService;
+    private final UserRepository userRepository;
 
     public ReservationService(
             EmployeeRepository employeeRepository,
             TreatmentRepository treatmentRepository,
             ReservationMapper reservationMapper,
             ReservationRepository reservationRepository,
-            AvailabilityService availabilityService) {
+            AvailabilityService availabilityService,
+            UserRepository userRepository) {
         this.employeeRepository = employeeRepository;
         this.treatmentRepository = treatmentRepository;
         this.reservationMapper = reservationMapper;
         this.reservationRepository = reservationRepository;
         this.availabilityService = availabilityService;
+        this.userRepository = userRepository;
     }
 
     public List<ReservationResponseDTO> findAllReservations() {
@@ -61,21 +73,49 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public UserReservationsPageDTO getUserReservations(User user, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Reservation> reservationPage = reservationRepository.findByUserOrderByReservationTimeDesc(user, pageable);
-        
+    public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction,
+            String search, String status) {
+        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        Specification<Reservation> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("user"), user));
+
+            if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("all")) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (search != null && !search.isEmpty()) {
+                String searchLower = "%" + search.toLowerCase() + "%";
+                List<Predicate> searchPredicates = new ArrayList<>();
+
+                searchPredicates.add(cb.like(cb.lower(root.get("employee").get("firstName")), searchLower));
+                searchPredicates.add(cb.like(cb.lower(root.get("employee").get("lastName")), searchLower));
+                searchPredicates.add(cb.like(cb.lower(root.get("status")), searchLower));
+                Join<Reservation, Treatment> treatmentsJoin = root.join("treatments");
+                searchPredicates.add(cb.like(cb.lower(treatmentsJoin.get("name")), searchLower));
+
+                predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
+                query.distinct(true);
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Reservation> reservationPage = reservationRepository.findAll(spec, pageable);
+
         List<UserReservationPreviewDTO> dtos = reservationPage.getContent()
                 .stream()
                 .map(reservationMapper::toUserReservationPreviewDTO)
                 .toList();
-                
+
         return new UserReservationsPageDTO(
-            dtos,
-            reservationPage.getTotalPages(),
-            reservationPage.getTotalElements(),
-            reservationPage.getNumber()
-        );
+                dtos,
+                reservationPage.getTotalPages(),
+                reservationPage.getTotalElements(),
+                reservationPage.getNumber());
     }
 
     @Transactional
@@ -84,25 +124,38 @@ public class ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 
         List<AvailableEmployeeDTO> availableEmployees = availabilityService.getAvailableEmployees(
-                new ArrayList<>(dto.treatmentIds()), dto.reservationTime()
-        );
+                new ArrayList<>(dto.treatmentIds()), dto.reservationTime());
 
-        boolean isAvailable = availableEmployees.stream()
-                .anyMatch(e -> e.id().equals(dto.employeeId()));
+        boolean isAvailable = availableEmployees
+                .stream()
+                .anyMatch(e -> e.id()
+                        .equals(dto.employeeId()));
 
         if (!isAvailable) {
             throw new IllegalArgumentException("The selected time slot is not available for this employee.");
         }
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
-        int sumDuration = treatments.stream().mapToInt(Treatment::getDurationMinutes).sum();
+        int sumDuration = treatments
+                .stream()
+                .mapToInt(Treatment::getDurationMinutes)
+                .sum();
+
+        BigDecimal totalPrice = treatments.stream()
+                .map(Treatment::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
         reservation.setEmployee(employee);
         reservation.setTreatments(treatments);
         reservation.setSumDuration(sumDuration);
-        reservation.setStatus("Pending");
+        reservation.setTotalPrice(totalPrice);
+        if (user.getReputation() >= REPUTATION_AUTO_CONFIRM_TRESHOLD) {
+            reservation.setStatus("Confirmed");
+        } else {
+            reservation.setStatus("Pending");
+        }
 
         return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
     }
@@ -119,6 +172,22 @@ public class ReservationService {
         reservation.setStatus(status);
 
         Reservation saved = reservationRepository.save(reservation);
+
+        switch (status) {
+            case "Cancelled" -> {
+                int reputation = Math.max(0, user.getReputation() - REPUTATION_CANCELED_PENALTY);
+                user.setReputation(reputation);
+                userRepository.save(user);
+            }
+            case "Completed" -> {
+                int reputation = Math.min(100, user.getReputation() + REPUTATION_COMPLETED_BONUS);
+                user.setReputation(reputation);
+                userRepository.save(user);
+            }
+            default -> {
+            }
+        }
+
         return reservationMapper.toResponseDTO(saved);
     }
 }

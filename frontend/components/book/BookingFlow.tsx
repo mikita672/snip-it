@@ -81,6 +81,10 @@ export default function BookingFlow({ treatments, initialTreatment, totalPages }
                 }),
             })
 
+            if (response.status === 401) {
+                router.push('/login')
+                return
+            }
             if (!response.ok) {
                 throw new Error()
             }

@@ -13,6 +13,10 @@ function UserMenu({ email }: { email?: string | null }) {
 
     const handleLogout = async () => {
         const response = await fetch('/api/auth/logout', { method: 'POST' });
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
         if (response.ok) {
             toast.success("Logged out successfully");
             router.refresh();
