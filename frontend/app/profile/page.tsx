@@ -53,7 +53,9 @@ export default async function ProfilePage({ searchParams }: Props) {
   if (search) appointmentsUrl += `&search=${encodeURIComponent(search)}`;
   if (status) appointmentsUrl += `&status=${encodeURIComponent(status)}`;
 
-  const appointmentsResponse = await serverFetch(appointmentsUrl, { method: "GET" });
+  const appointmentsResponse = await serverFetch(appointmentsUrl, {
+    method: "GET",
+  });
 
   let appointmentsData: UserReservationsPage | null = null;
   if (appointmentsResponse.ok) {
@@ -64,7 +66,9 @@ export default async function ProfilePage({ searchParams }: Props) {
     <div className="flex flex-col gap-8 md:px-24 md:py-12 py-6 px-4 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2 text-center md:text-left">
         <h1 className={`text-4xl ${bodoni.className}`}>Settings</h1>
-        <p className="text-muted-foreground">Manage your account and preferences.</p>
+        <p className="text-muted-foreground">
+          Manage your account and preferences.
+        </p>
       </div>
 
       <Tabs defaultValue={activeTab} className="w-full">
@@ -90,7 +94,9 @@ export default async function ProfilePage({ searchParams }: Props) {
           {appointmentsData ? (
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <h2 className={`text-2xl ${bodoni.className}`}>My Appointments</h2>
+                <h2 className={`text-2xl ${bodoni.className}`}>
+                  My Appointments
+                </h2>
                 <p className="text-sm text-muted-foreground">
                   Your past and upcoming bookings at Snip-it.
                 </p>
@@ -98,7 +104,9 @@ export default async function ProfilePage({ searchParams }: Props) {
               <AppointmentsTable initialData={appointmentsData} />
             </div>
           ) : (
-            <p className="text-center font-bold text-destructive">Failed to load appointments</p>
+            <p className="text-center font-bold text-destructive">
+              Failed to load appointments
+            </p>
           )}
         </TabsContent>
 

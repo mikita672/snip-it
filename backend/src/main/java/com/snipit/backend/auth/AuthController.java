@@ -27,7 +27,7 @@ public class AuthController {
         @PostMapping("/sign-up")
         public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
                 try {
-                        AuthTokens tokens = authService.register(request.getEmail(), request.getPassword());
+                        AuthTokens tokens = authService.register(request);
                         return withAuthCookies(tokens, ResponseEntity.noContent());
                 } catch (EmailAlreadyExistsException e) {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
