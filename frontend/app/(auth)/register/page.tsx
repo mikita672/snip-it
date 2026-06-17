@@ -34,10 +34,24 @@ import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
-    email: z.email("Must be a valid email"),
+    firstName: z
+      .string()
+      .min(2, "First name must be at least 2 characters")
+      .max(50, "First name is too long"),
+    lastName: z
+      .string()
+      .min(2, "Last name must be at least 2 characters")
+      .max(50, "Last name is too long"),
+    phone: z
+      .string()
+      .refine((val) => !val || /^\+?[0-9\s-]{7,15}$/.test(val), {
+        message: "Invalid phone number format",
+      })
+      .optional(),
+    email: z.string().email("Must be a valid email"),
     password: z
       .string()
-      .nonempty("Password is required")
+      .min(1, "Password is required")
       .min(8, "Password should be at least 8 characters long")
       .max(24, "Password should be no longer than 24 characters")
       .regex(/[a-z]/, "Password must include at least 1 lowercase character")
@@ -54,7 +68,7 @@ const formSchema = z
       ctx.addIssue({
         code: "custom",
         message: "Passwords do not match",
-        path: ["passwordConfirmation"],
+        path: ["confirmPassword"],
       });
     }
   });
@@ -70,6 +84,9 @@ function Register() {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
+      firstName: "",
+      lastName: "",
+      phone: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -82,7 +99,13 @@ function Register() {
     }
     const response = await fetch("/api/auth/sign-up", {
       method: "POST",
-      body: JSON.stringify({ email: data.email, password: data.password }),
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+      }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -100,8 +123,8 @@ function Register() {
   };
 
   return (
-    <div className="flex justify-center items-center h-[68vh]">
-      <Card className="w-125">
+    <div className="flex justify-center items-center py-12">
+      <Card className="w-150">
         <CardHeader>
           <CardTitle>Registration form</CardTitle>
           <CardDescription>Fill the form to sign up</CardDescription>
@@ -110,105 +133,178 @@ function Register() {
           <form id="sign-up-form" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldSet className="flex flex-col gap-6">
               <FieldGroup>
-                <Controller
-                  name="email"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                      <Input
-                        {...field}
-                        id={field.name}
-                        aria-invalid={fieldState.invalid}
-                        placeholder="example@mail.com"
-                        className="bg-background"
-                        autoComplete="on"
-                        type="email"
-                        required
-                        autoFocus
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="password"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                      <InputGroup className="bg-background">
-                        <InputGroupInput
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Controller
+                    name="firstName"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={field.name}>First Name</FieldLabel>
+                        <Input
                           {...field}
                           id={field.name}
                           aria-invalid={fieldState.invalid}
-                          placeholder="Your password goes here"
-                          autoComplete="off"
-                          type={showPassword ? "text" : "password"}
+                          placeholder="John"
+                          className="bg-background"
                           required
-                          autoFocus
                         />
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            size="icon-sm"
-                            className="cursor-pointer"
-                            onClick={() => setShowPassword((prev) => !prev)}
-                          >
-                            {showPassword ? <EyeClosedIcon /> : <EyeIcon />}
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="confirmPassword"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        Password confirmation
-                      </FieldLabel>
-                      <InputGroup className="bg-background">
-                        <InputGroupInput
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                  <Controller
+                    name="lastName"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={field.name}>Last Name</FieldLabel>
+                        <Input
                           {...field}
                           id={field.name}
                           aria-invalid={fieldState.invalid}
-                          placeholder="Enter the password again"
-                          autoComplete="off"
-                          type={showPasswordConfirmation ? "text" : "password"}
+                          placeholder="Doe"
+                          className="bg-background"
                           required
-                          autoFocus
                         />
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            size="icon-sm"
-                            className="cursor-pointer"
-                            onClick={() =>
-                              setShowPasswordConfirmation((prev) => !prev)
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Controller
+                    name="email"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                        <Input
+                          {...field}
+                          id={field.name}
+                          aria-invalid={fieldState.invalid}
+                          placeholder="example@mail.com"
+                          className="bg-background"
+                          autoComplete="on"
+                          type="email"
+                          required
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+
+                  <Controller
+                    name="phone"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Phone Number
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          id={field.name}
+                          aria-invalid={fieldState.invalid}
+                          placeholder="+1 234 567 890"
+                          className="bg-background"
+                          type="tel"
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Controller
+                    name="password"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                        <InputGroup className="bg-background">
+                          <InputGroupInput
+                            {...field}
+                            id={field.name}
+                            aria-invalid={fieldState.invalid}
+                            placeholder="Your password"
+                            autoComplete="off"
+                            type={showPassword ? "text" : "password"}
+                            required
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                              size="icon-sm"
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowPassword((prev) => !prev);
+                              }}
+                            >
+                              {showPassword ? <EyeClosedIcon /> : <EyeIcon />}
+                            </InputGroupButton>
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+
+                  <Controller
+                    name="confirmPassword"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Confirm Password
+                        </FieldLabel>
+                        <InputGroup className="bg-background">
+                          <InputGroupInput
+                            {...field}
+                            id={field.name}
+                            aria-invalid={fieldState.invalid}
+                            placeholder="Confirm password"
+                            autoComplete="off"
+                            type={
+                              showPasswordConfirmation ? "text" : "password"
                             }
-                          >
-                            {showPasswordConfirmation ? (
-                              <EyeClosedIcon />
-                            ) : (
-                              <EyeIcon />
-                            )}
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
+                            required
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                              size="icon-sm"
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowPasswordConfirmation((prev) => !prev);
+                              }}
+                            >
+                              {showPasswordConfirmation ? (
+                                <EyeClosedIcon />
+                              ) : (
+                                <EyeIcon />
+                              )}
+                            </InputGroupButton>
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
               </FieldGroup>
             </FieldSet>
           </form>
