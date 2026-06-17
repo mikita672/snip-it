@@ -3,6 +3,7 @@ package com.snipit.backend;
 import com.snipit.backend.auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,19 +33,21 @@ public class SecurityConfiguration {
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                                .authorizeHttpRequests((authorize) -> authorize
+                                .authorizeHttpRequests(authorize -> authorize
                                                 .requestMatchers(
-                                                                "/actuator/health",
-                                                                "/v3/api-docs/**",
-                                                                "/v3/api-docs.yaml",
-                                                                "/swagger-ui/**",
-                                                                "/swagger-ui.html",
-                                                                "/api/v1/auth/**",
-                                                                "/api/v1/treatment/preview",
-                                                                "/api/v1/employee/preview",
-                                                                "/api/v1/availability",
-                                                                "/api/v1/availability/**")
+                                                        "/actuator/health",
+                                                        "/v3/api-docs/**", "/v3/api-docs.yaml",
+                                                        "/swagger-ui/**", "/swagger-ui.html",
+                                                        "/api/v1/auth/**",
+                                                        "/api/v1/treatment/preview",
+                                                        "/api/v1/employee/preview",
+                                                        "/api/v1/availability", "/api/v1/availability/**")
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.GET,   "/api/v1/reservation/my-appointments").authenticated()
+                                                .requestMatchers(HttpMethod.GET,   "/api/v1/employee", "/api/v1/reservation", "/api/v1/reservation/*").hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.POST,  "/api/v1/employee", "/api/v1/treatment").hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.PUT,   "/api/v1/employee/*", "/api/v1/treatment/*").hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.PATCH, "/api/v1/employee/**", "/api/v1/treatment/**").hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .build();
         }
