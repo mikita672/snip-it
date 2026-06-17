@@ -37,11 +37,10 @@ const profileSchema = z.object({
   email: z.email({ error: "Invalid email address" }),
   phone: z
     .string()
-    .refine((val) => !val || /^\+?[0-9\s-]{7,15}$/.test(val), {
+    .min(1, { error: "Phone number is required" })
+    .refine((val) => /^\+?[0-9\s-]{7,15}$/.test(val), {
       error: "Invalid phone number format",
-    })
-    .optional()
-    .nullable(),
+    }),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -151,7 +150,7 @@ export default function ProfileForm({ user }: Props) {
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="+1 234 567 890"
+                        placeholder="234 567 890"
                         {...field}
                         value={field.value || ""}
                       />

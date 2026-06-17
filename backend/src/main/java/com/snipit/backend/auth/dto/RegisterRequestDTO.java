@@ -23,5 +23,6 @@ public class RegisterRequestDTO {
     @NotBlank
     private String lastName;
 
+    @NotBlank
     private String phone;
 }

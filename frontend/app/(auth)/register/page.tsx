@@ -44,10 +44,10 @@ const formSchema = z
       .max(50, { error: "Last name is too long" }),
     phone: z
       .string()
-      .refine((val) => !val || /^\+?[0-9\s-]{7,15}$/.test(val), {
+      .min(1, { error: "Phone number is required" })
+      .refine((val) => /^\+?[0-9\s-]{7,15}$/.test(val), {
         error: "Invalid phone number format",
-      })
-      .optional(),
+      }),
     email: z.email({ error: "Must be a valid email" }),
     password: z
       .string()
