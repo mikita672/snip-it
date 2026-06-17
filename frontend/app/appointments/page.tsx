@@ -16,8 +16,21 @@ interface Props {
 async function AppointmentsPage({ searchParams }: Props) {
     const paramsObj = await searchParams;
     const page = paramsObj.page ? parseInt(paramsObj.page as string) : 0;
+    const size = paramsObj.size ? parseInt(paramsObj.size as string) : 5;
+    const sort = paramsObj.sort ? (paramsObj.sort as string) : 'reservationTime';
+    const direction = paramsObj.direction ? (paramsObj.direction as string) : 'desc';
+    const search = paramsObj.search ? (paramsObj.search as string) : '';
+    const status = paramsObj.status ? (paramsObj.status as string) : '';
 
-    const response = await serverFetch(`/api/reservation/my-appointments?page=${page}&size=5`, {
+    let url = `/api/reservation/my-appointments?page=${page}&size=${size}&sort=${sort}&direction=${direction}`;
+    if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+    }
+    if (status) {
+        url += `&status=${encodeURIComponent(status)}`;
+    }
+
+    const response = await serverFetch(url, {
         method: 'GET',
     });
 

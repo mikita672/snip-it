@@ -25,7 +25,7 @@ public class DataSeeder {
 
     @Bean
     CommandLineRunner initDatabase(
-            TreatmentRepository treatmentRepository, 
+            TreatmentRepository treatmentRepository,
             EmployeeRepository employeeRepository,
             UserRepository userRepository,
             ReservationRepository reservationRepository,
@@ -124,26 +124,47 @@ public class DataSeeder {
                 user.setEmail("client@example.com");
                 user.setFirstName("Demo");
                 user.setLastName("Client");
+                user.setReputation(90);
                 user.setPasswordHash(passwordEncoder.encode("password"));
                 userRepository.save(user);
 
-                Reservation r1 = new Reservation();
-                r1.setUser(user);
-                r1.setEmployee(e2);
-                r1.setReservationTime(LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0));
-                r1.setStatus("Pending");
-                r1.setTreatments(Set.of(t5, t6));
-                r1.setSumDuration(t5.getDurationMinutes() + t6.getDurationMinutes());
-                
-                Reservation r2 = new Reservation();
-                r2.setUser(user);
-                r2.setEmployee(e4);
-                r2.setReservationTime(LocalDateTime.now().minusDays(15).withHour(10).withMinute(0).withSecond(0).withNano(0));
-                r2.setStatus("Completed");
-                r2.setTreatments(Set.of(t2, t6));
-                r2.setSumDuration(t2.getDurationMinutes() + t6.getDurationMinutes());
+                String[] statuses = { "Pending", "Confirmed", "Cancelled", "Completed" };
+                List<Employee> allEmployees = List.of(e1, e2, e3, e4);
+                List<Treatment> allTreatments = List.of(t1, t2, t3, t4, t5, t6, t7, t8);
+                java.util.Random random = new java.util.Random();
 
-                reservationRepository.saveAll(List.of(r1, r2));
+                for (int i = 0; i < 40; i++) {
+                    Reservation r = new Reservation();
+                    r.setUser(user);
+
+                    Employee randomEmployee = allEmployees.get(random.nextInt(allEmployees.size()));
+                    r.setEmployee(randomEmployee);
+
+                    LocalDateTime randomTime = LocalDateTime.now()
+                            .plusDays(random.nextInt(61) - 30)
+                            .withHour(9 + random.nextInt(8))
+                            .withMinute(random.nextBoolean() ? 0 : 30)
+                            .withSecond(0).withNano(0);
+                    r.setReservationTime(randomTime);
+
+                    r.setStatus(statuses[random.nextInt(statuses.length)]);
+
+                    int treatmentCount = 1 + random.nextInt(2);
+                    Set<Treatment> selectedTreatments = new java.util.HashSet<>();
+                    int duration = 0;
+                    java.math.BigDecimal totalPrice = java.math.BigDecimal.ZERO;
+                    for (int j = 0; j < treatmentCount; j++) {
+                        Treatment rt = allTreatments.get(random.nextInt(allTreatments.size()));
+                        selectedTreatments.add(rt);
+                        duration += rt.getDurationMinutes();
+                        totalPrice = totalPrice.add(rt.getPrice());
+                    }
+                    r.setTreatments(selectedTreatments);
+                    r.setSumDuration(duration);
+                    r.setTotalPrice(totalPrice);
+
+                    reservationRepository.save(r);
+                }
             }
         };
     }
