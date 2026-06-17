@@ -1,5 +1,6 @@
 package com.snipit.backend.reservation;
 
+import com.snipit.backend.reservation.dto.AdminReservationPreviewDTO;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import com.snipit.backend.reservation.dto.UserReservationPreviewDTO;
@@ -34,6 +35,19 @@ public class ReservationMapper {
                 reservation.getSumDuration(),
                 reservation.getTotalPrice(),
                 reservation.getStatus());
+    }
+
+    public AdminReservationPreviewDTO toAdminReservationPreviewDTO(Reservation reservation) {
+        return new AdminReservationPreviewDTO(
+                reservation.getId(),
+                reservation.getReservationTime(),
+                reservation.getTreatments().stream().map(Treatment::getName).toList(),
+                reservation.getEmployee().getFirstName() + " " + reservation.getEmployee().getLastName(),
+                reservation.getSumDuration(),
+                reservation.getTotalPrice(),
+                reservation.getStatus(),
+                reservation.getUser().getFirstName() + " " + reservation.getUser().getLastName(),
+                reservation.getUser().getEmail());
     }
 
     public Reservation toEntity(ReservationRequestDTO dto) {

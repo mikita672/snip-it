@@ -1,5 +1,4 @@
 package com.snipit.backend.reservation;
-import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.snipit.backend.reservation.dto.AdminReservationsPageDTO;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import com.snipit.backend.reservation.dto.UserReservationsPageDTO;
@@ -30,8 +30,14 @@ public class ReservationController {
     }
     
     @GetMapping
-    public List<ReservationResponseDTO> getAll(){
-        return reservationService.findAllReservations();
+    public AdminReservationsPageDTO getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reservationTime") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status) {
+        return reservationService.getAllReservationsAdmin(page, size, sort, direction, search, status);
     }
 
     @GetMapping("/my-appointments")
@@ -59,8 +65,15 @@ public class ReservationController {
     @PatchMapping("/{id}")
     public ReservationResponseDTO updateStatus(
             @AuthenticationPrincipal User user,
-            @PathVariable Integer id, 
+            @PathVariable Integer id,
             @RequestParam String status) {
         return reservationService.updateReservationStatus(id, status, user);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ReservationResponseDTO adminUpdateStatus(
+            @PathVariable Integer id,
+            @RequestParam String status) {
+        return reservationService.adminUpdateReservationStatus(id, status);
     }
 }

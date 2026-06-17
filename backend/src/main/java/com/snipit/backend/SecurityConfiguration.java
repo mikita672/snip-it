@@ -48,6 +48,7 @@ public class SecurityConfiguration {
                                                 .requestMatchers(HttpMethod.POST,  "/api/v1/employee", "/api/v1/treatment").hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.PUT,   "/api/v1/employee/*", "/api/v1/treatment/*").hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/employee/**", "/api/v1/treatment/**").hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.PATCH, "/api/v1/reservation/*/status").hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .build();
         }
