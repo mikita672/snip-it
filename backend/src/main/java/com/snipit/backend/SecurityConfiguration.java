@@ -44,7 +44,7 @@ public class SecurityConfiguration {
                                                         "/api/v1/availability", "/api/v1/availability/**")
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.GET,   "/api/v1/reservation/my-appointments").authenticated()
-                                                .requestMatchers(HttpMethod.GET,   "/api/v1/employee", "/api/v1/reservation", "/api/v1/reservation/*").hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.GET,   "/api/v1/employee", "/api/v1/treatment", "/api/v1/treatment/*", "/api/v1/reservation", "/api/v1/reservation/*").hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.POST,  "/api/v1/employee", "/api/v1/treatment").hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.PUT,   "/api/v1/employee/*", "/api/v1/treatment/*").hasRole("ADMIN")
                                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/employee/**", "/api/v1/treatment/**").hasRole("ADMIN")

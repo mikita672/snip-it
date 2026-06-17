@@ -34,25 +34,34 @@ public class TreatmentController {
 		this.treatmentDTOMapper = treatmentDTOMapper;
 	}
 
-	@GetMapping("/preview")
-	public TreatmentsPreviewPageDTO getTreatmentsPreviews(
-		@RequestParam(defaultValue = "1")
-		Integer pageNumber,
-		@RequestParam(defaultValue = "PRICE")
-		TreatmentService.SortBy sortBy,
-		@RequestParam(defaultValue = "false")
-		boolean sortDescending,
-		@RequestParam(defaultValue = "")
-		String searchToken,
-		@RequestParam(defaultValue = "true")
-		boolean activeOnly
+	@GetMapping
+	public TreatmentsPreviewPageDTO getTreatments(
+		@RequestParam(defaultValue = "1") Integer pageNumber,
+		@RequestParam(defaultValue = "PRICE") TreatmentService.SortBy sortBy,
+		@RequestParam(defaultValue = "false") boolean sortDescending,
+		@RequestParam(defaultValue = "") String searchToken
 	) {
 		Page<Treatment> page = treatmentService.searchTreatments(
-			pageNumber - 1,
-			sortBy,
-			sortDescending,
-			searchToken.trim(),
-			activeOnly
+			pageNumber - 1, sortBy, sortDescending, searchToken.trim(), false
+		);
+		List<TreatmentPreviewDTO> treatments = page.stream()
+			.map(treatmentDTOMapper::previewDTOFromEntity)
+			.toList();
+		return TreatmentsPreviewPageDTO.builder()
+			.totalPages(page.getTotalPages())
+			.treatments(treatments)
+			.build();
+	}
+
+	@GetMapping("/preview")
+	public TreatmentsPreviewPageDTO getTreatmentsPreviews(
+		@RequestParam(defaultValue = "1") Integer pageNumber,
+		@RequestParam(defaultValue = "PRICE") TreatmentService.SortBy sortBy,
+		@RequestParam(defaultValue = "false") boolean sortDescending,
+		@RequestParam(defaultValue = "") String searchToken
+	) {
+		Page<Treatment> page = treatmentService.searchTreatments(
+			pageNumber - 1, sortBy, sortDescending, searchToken.trim(), true
 		);
 		List<TreatmentPreviewDTO> treatments = page.stream()
 			.map(treatmentDTOMapper::previewDTOFromEntity)

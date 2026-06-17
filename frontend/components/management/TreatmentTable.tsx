@@ -50,9 +50,8 @@ export default function TreatmentTable() {
                 sortBy,
                 sortDescending: String(sortDesc),
                 searchToken: debouncedSearch,
-                activeOnly: 'false',
             })
-            const res = await fetch(`/api/treatment/preview?${params}`)
+            const res = await fetch(`/api/treatment?${params}`)
             if (!res.ok) return
             const data: { treatments: Treatment[]; totalPages: number } = await res.json()
             setTreatments(data.treatments)
