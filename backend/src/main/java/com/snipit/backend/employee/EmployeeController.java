@@ -30,9 +30,17 @@ public class EmployeeController {
 		this.employeeDTOMapper = employeeDTOMapper;
 	}
 
+	@GetMapping
+	public List<EmployeePreviewDTO> getEmployees() {
+		return employeeService.getAll()
+			.stream()
+			.map(employeeDTOMapper::previewDTOFromEntity)
+			.toList();
+	}
+
 	@GetMapping("/preview")
 	public List<EmployeePreviewDTO> getEmployeesPreview() {
-		return employeeService.getAll()
+		return employeeService.getAllActive()
 			.stream()
 			.map(employeeDTOMapper::previewDTOFromEntity)
 			.toList();

@@ -23,6 +23,10 @@ public class EmployeeService {
 		return employeeRepository.findAll();
 	}
 
+	public List<Employee> getAllActive() {
+		return employeeRepository.findAllByIsActiveTrue();
+	}
+
 	public Employee create(EmployeeRequestDTO dto) {
 		Employee employee = new Employee();
 		employee.setFirstName(dto.firstName());

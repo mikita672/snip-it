@@ -11,7 +11,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 	@EntityGraph(attributePaths = {"treatments"})
 	List<Employee> findAll();
 
-	@Query("SELECT e.id FROM Employee e JOIN e.treatments t WHERE t.id IN :treatmentIds GROUP BY e.id HAVING COUNT(DISTINCT t.id) = :treatmentCount")
+	@EntityGraph(attributePaths = {"treatments"})
+	List<Employee> findAllByIsActiveTrue();
+
+	@Query("SELECT e.id FROM Employee e JOIN e.treatments t WHERE t.id IN :treatmentIds AND e.isActive = true GROUP BY e.id HAVING COUNT(DISTINCT t.id) = :treatmentCount")
 	List<Integer> findEmployeeIdsByAllTreatments(@Param("treatmentIds") List<Integer> treatmentIds, @Param("treatmentCount") long treatmentCount);
 
 	@Query("SELECT DISTINCT e FROM Employee e LEFT JOIN FETCH e.schedules WHERE e.id IN :ids")
