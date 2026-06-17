@@ -9,7 +9,6 @@ import com.snipit.backend.treatment.Treatment;
 
 @Component
 public class ReservationMapper {
-
     public ReservationResponseDTO toResponseDTO(Reservation reservation) {
         return ReservationResponseDTO.builder()
                 .id(reservation.getId())
@@ -22,6 +21,7 @@ public class ReservationMapper {
                         .map(Treatment::getId)
                         .collect(Collectors.toSet()))
                 .sumDuration(reservation.getSumDuration())
+                .totalPrice(reservation.getTotalPrice())
                 .build();
     }
 

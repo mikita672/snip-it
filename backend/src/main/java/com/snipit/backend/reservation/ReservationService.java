@@ -12,6 +12,7 @@ import com.snipit.backend.treatment.TreatmentRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
 
+import java.math.BigDecimal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -72,10 +73,9 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction, String search, String status) {
-        Sort sortObj = direction.equalsIgnoreCase("desc") ? 
-            Sort.by(sort).descending() : 
-            Sort.by(sort).ascending();
+    public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction,
+            String search, String status) {
+        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
 
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
@@ -137,13 +137,13 @@ public class ReservationService {
 
         Set<Treatment> treatments = new HashSet<>(treatmentRepository.findAllById(dto.treatmentIds()));
         int sumDuration = treatments
-            .stream()
-            .mapToInt(Treatment::getDurationMinutes)
-            .sum();
+                .stream()
+                .mapToInt(Treatment::getDurationMinutes)
+                .sum();
 
-        java.math.BigDecimal totalPrice = treatments.stream()
-            .map(Treatment::getPrice)
-            .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        BigDecimal totalPrice = treatments.stream()
+                .map(Treatment::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Reservation reservation = reservationMapper.toEntity(dto);
         reservation.setUser(user);
