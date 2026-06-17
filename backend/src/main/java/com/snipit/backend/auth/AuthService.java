@@ -16,6 +16,7 @@ import com.snipit.backend.auth.refreshTokens.RefreshTokenRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
 import com.snipit.backend.auth.refreshTokens.RefreshToken;
+import com.snipit.backend.auth.dto.RegisterRequestDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,14 +29,17 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthProperties authProperties;
 
-    public AuthTokens register(String email, String password) {
-        if (repository.existsByEmail(email)) {
-            throw new EmailAlreadyExistsException(email);
+    public AuthTokens register(RegisterRequestDTO dto) {
+        if (repository.existsByEmail(dto.getEmail())) {
+            throw new EmailAlreadyExistsException(dto.getEmail());
         }
 
         User user = new User();
-        user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(password));
+        user.setEmail(dto.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhone(dto.getPhone());
         user.setIsAdmin(false);
         repository.save(user);
 
