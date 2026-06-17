@@ -38,7 +38,7 @@ export default function EmployeeTable() {
     const fetchEmployees = async () => {
         setLoading(true)
         try {
-            const res = await fetch('/api/employee/preview')
+            const res = await fetch('/api/employee')
             if (!res.ok) return
             const data: EmployeePreview[] = await res.json()
             setEmployees(data)
