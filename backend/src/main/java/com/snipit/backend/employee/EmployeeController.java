@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.snipit.backend.employee.dto.EmployeeDTO;
 import com.snipit.backend.employee.dto.EmployeeDTOMapper;
 import com.snipit.backend.employee.dto.EmployeePreviewDTO;
 import com.snipit.backend.employee.dto.EmployeeRequestDTO;
@@ -31,10 +32,10 @@ public class EmployeeController {
 	}
 
 	@GetMapping
-	public List<EmployeePreviewDTO> getEmployees() {
+	public List<EmployeeDTO> getEmployees() {
 		return employeeService.getAll()
 			.stream()
-			.map(employeeDTOMapper::previewDTOFromEntity)
+			.map(employeeDTOMapper::employeeDTOFromEntity)
 			.toList();
 	}
 
@@ -48,20 +49,20 @@ public class EmployeeController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public EmployeePreviewDTO createEmployee(@RequestBody EmployeeRequestDTO dto) {
-		return employeeDTOMapper.previewDTOFromEntity(employeeService.create(dto));
+	public EmployeeDTO createEmployee(@RequestBody EmployeeRequestDTO dto) {
+		return employeeDTOMapper.employeeDTOFromEntity(employeeService.create(dto));
 	}
 
 	@PutMapping("/{id}")
-	public EmployeePreviewDTO updateEmployee(
+	public EmployeeDTO updateEmployee(
 		@PathVariable Integer id,
 		@RequestBody EmployeeRequestDTO dto
 	) {
-		return employeeDTOMapper.previewDTOFromEntity(employeeService.update(id, dto));
+		return employeeDTOMapper.employeeDTOFromEntity(employeeService.update(id, dto));
 	}
 
 	@PatchMapping("/{id}/toggle-active")
-	public EmployeePreviewDTO toggleActive(@PathVariable Integer id) {
-		return employeeDTOMapper.previewDTOFromEntity(employeeService.toggleActive(id));
+	public EmployeeDTO toggleActive(@PathVariable Integer id) {
+		return employeeDTOMapper.employeeDTOFromEntity(employeeService.toggleActive(id));
 	}
 }

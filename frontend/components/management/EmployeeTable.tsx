@@ -5,7 +5,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { EmployeePreview } from '@/types/employee/EmployeePreview'
+import type { Employee } from '@/types/employee/Employee'
 import type { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
 
 interface EmployeeForm {
@@ -27,10 +27,10 @@ const emptyForm: EmployeeForm = {
 }
 
 export default function EmployeeTable() {
-    const [employees, setEmployees] = useState<EmployeePreview[]>([])
+    const [employees, setEmployees] = useState<Employee[]>([])
     const [loading, setLoading] = useState(false)
     const [search, setSearch] = useState('')
-    const [editingEmployee, setEditingEmployee] = useState<EmployeePreview | null>(null)
+    const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
     const [isCreating, setIsCreating] = useState(false)
     const [form, setForm] = useState<EmployeeForm>(emptyForm)
     const [availableTreatments, setAvailableTreatments] = useState<TreatmentPreview[]>([])
@@ -40,7 +40,7 @@ export default function EmployeeTable() {
         try {
             const res = await fetch('/api/employee')
             if (!res.ok) return
-            const data: EmployeePreview[] = await res.json()
+            const data: Employee[] = await res.json()
             setEmployees(data)
         } finally {
             setLoading(false)
@@ -81,7 +81,7 @@ export default function EmployeeTable() {
         setEditingEmployee(null)
     }
 
-    const openEdit = (employee: EmployeePreview) => {
+    const openEdit = (employee: Employee) => {
         setEditingEmployee(employee)
         setIsCreating(false)
         setForm({
@@ -118,8 +118,8 @@ export default function EmployeeTable() {
     const handleToggleActive = async (id: number) => {
         const res = await fetch(`/api/employee/${id}/toggle-active`, { method: 'PATCH' })
         if (res.ok) {
-            const updated: EmployeePreview = await res.json()
-            setEmployees((prev: EmployeePreview[]) => prev.map((e: EmployeePreview) => e.id === id ? updated : e))
+            const updated: Employee = await res.json()
+            setEmployees((prev: Employee[]) => prev.map((e: Employee) => e.id === id ? updated : e))
         }
     }
 
