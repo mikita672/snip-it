@@ -36,38 +36,41 @@ const formSchema = z
   .object({
     firstName: z
       .string()
-      .min(2, "First name must be at least 2 characters")
-      .max(50, "First name is too long"),
+      .min(2, { error: "First name must be at least 2 characters" })
+      .max(50, { error: "First name is too long" }),
     lastName: z
       .string()
-      .min(2, "Last name must be at least 2 characters")
-      .max(50, "Last name is too long"),
+      .min(2, { error: "Last name must be at least 2 characters" })
+      .max(50, { error: "Last name is too long" }),
     phone: z
       .string()
       .refine((val) => !val || /^\+?[0-9\s-]{7,15}$/.test(val), {
-        message: "Invalid phone number format",
+        error: "Invalid phone number format",
       })
       .optional(),
-    email: z.string().email("Must be a valid email"),
+    email: z.email({ error: "Must be a valid email" }),
     password: z
       .string()
-      .min(1, "Password is required")
-      .min(8, "Password should be at least 8 characters long")
-      .max(24, "Password should be no longer than 24 characters")
-      .regex(/[a-z]/, "Password must include at least 1 lowercase character")
-      .regex(/[A-Z]/, "Password must include at least 1 uppercase character")
-      .regex(/[0-9]/, "Password must include at least 1 digit")
-      .regex(
-        /[^a-zA-Z0-9]/,
-        "Password must include at least 1 special character",
-      ),
+      .min(1, { error: "Password is required" })
+      .min(8, { error: "Password should be at least 8 characters long" })
+      .max(24, { error: "Password should be no longer than 24 characters" })
+      .regex(/[a-z]/, {
+        error: "Password must include at least 1 lowercase character",
+      })
+      .regex(/[A-Z]/, {
+        error: "Password must include at least 1 uppercase character",
+      })
+      .regex(/[0-9]/, { error: "Password must include at least 1 digit" })
+      .regex(/[^a-zA-Z0-9]/, {
+        error: "Password must include at least 1 special character",
+      }),
     confirmPassword: z.string(),
   })
   .superRefine(({ password, confirmPassword }, ctx) => {
     if (password !== confirmPassword) {
       ctx.addIssue({
         code: "custom",
-        message: "Passwords do not match",
+        error: "Passwords do not match",
         path: ["confirmPassword"],
       });
     }
