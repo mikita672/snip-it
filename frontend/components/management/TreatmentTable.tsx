@@ -34,6 +34,7 @@ export default function TreatmentTable() {
     const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null)
     const [isCreating, setIsCreating] = useState(false)
     const [editForm, setEditForm] = useState({ name: '', description: '', durationMinutes: '', price: '' })
+    const [formErrors, setFormErrors] = useState<{ durationMinutes?: string; price?: string }>({})
 
     const emptyForm = { name: '', description: '', durationMinutes: '', price: '' }
 
@@ -103,9 +104,15 @@ export default function TreatmentTable() {
     const closeModal = () => {
         setEditingTreatment(null)
         setIsCreating(false)
+        setFormErrors({})
     }
 
     const handleSave = async () => {
+        const errors: { durationMinutes?: string; price?: string } = {}
+        if (Number(editForm.durationMinutes) < 1) errors.durationMinutes = 'Duration must be at least 1 minute'
+        if (Number(editForm.price) < 0) errors.price = 'Price cannot be negative'
+        if (Object.keys(errors).length > 0) { setFormErrors(errors); return }
+
         const url = isCreating ? '/api/treatment' : `/api/treatment/${editingTreatment!.id}`
         const method = isCreating ? 'POST' : 'PUT'
         const res = await fetch(url, {
@@ -276,9 +283,15 @@ export default function TreatmentTable() {
                                     type="number"
                                     min={1}
                                     value={editForm.durationMinutes}
-                                    onChange={e => setEditForm(f => ({ ...f, durationMinutes: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => {
+                                        setEditForm(f => ({ ...f, durationMinutes: e.target.value }))
+                                        setFormErrors(err => ({ ...err, durationMinutes: undefined }))
+                                    }}
+                                    className={`ring-1 ${formErrors.durationMinutes ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.durationMinutes && (
+                                    <span className="text-xs text-destructive">{formErrors.durationMinutes}</span>
+                                )}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Price ($)
@@ -287,9 +300,15 @@ export default function TreatmentTable() {
                                     step="0.01"
                                     min={0}
                                     value={editForm.price}
-                                    onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => {
+                                        setEditForm(f => ({ ...f, price: e.target.value }))
+                                        setFormErrors(err => ({ ...err, price: undefined }))
+                                    }}
+                                    className={`ring-1 ${formErrors.price ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.price && (
+                                    <span className="text-xs text-destructive">{formErrors.price}</span>
+                                )}
                             </label>
                         </div>
                         <div className="flex gap-2 justify-end">
