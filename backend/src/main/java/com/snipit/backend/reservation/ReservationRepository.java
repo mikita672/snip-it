@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface ReservationRepository
@@ -20,4 +21,6 @@ public interface ReservationRepository
 			@Param("endOfDay") LocalDateTime endOfDay);
 
 	Page<Reservation> findByUserOrderByReservationTimeDesc(User user, Pageable pageable);
+
+	long countByUserAndStatusIn(User user, Collection<String> statuses);
 }

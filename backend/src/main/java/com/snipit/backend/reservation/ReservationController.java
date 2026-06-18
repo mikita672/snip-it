@@ -24,11 +24,11 @@ import jakarta.validation.Valid;
 @Tag(name = "Reservation", description = "Reservation management endpoints")
 public class ReservationController {
     private final ReservationService reservationService;
-    
+
     public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
-    
+
     @GetMapping
     public AdminReservationsPageDTO getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -58,7 +58,8 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ReservationResponseDTO create(@AuthenticationPrincipal User user, @RequestBody @Valid ReservationRequestDTO dto) {
+    public ReservationResponseDTO create(@AuthenticationPrincipal User user,
+            @RequestBody @Valid ReservationRequestDTO dto) {
         return reservationService.createReservation(dto, user);
     }
 
