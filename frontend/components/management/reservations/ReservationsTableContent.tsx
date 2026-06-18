@@ -1,6 +1,7 @@
 'use client'
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { SortIcon } from '@/components/appointments/SortIcon'
 import { ReservationsTableRow } from './ReservationsTableRow'
 import type { AdminReservationsPage } from '@/types/reservation/AdminReservationsPage'
 import type { AdminReservationPreview } from '@/types/reservation/AdminReservationPreview'
@@ -10,23 +11,38 @@ interface Props {
     data: AdminReservationsPage | null
     updatingId: number | null
     handleStatusChange: (reservation: AdminReservationPreview, newStatus: string) => void
+    handleSort: (field: string) => void
+    currentSort: string
+    currentDirection: string
 }
 
-export function ReservationsTableContent({ loading, data, updatingId, handleStatusChange }: Props) {
+export function ReservationsTableContent({ loading, data, updatingId, handleStatusChange, handleSort, currentSort, currentDirection }: Props) {
     const hasNoData = !data || data.reservations.length === 0
+
+    const sortableHead = (label: string, field: string) => (
+        <TableHead
+            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => handleSort(field)}
+        >
+            <div className="flex items-center">
+                {label}
+                <SortIcon field={field} currentSort={currentSort} currentDirection={currentDirection} />
+            </div>
+        </TableHead>
+    )
 
     return (
         <div className="rounded-xl border overflow-hidden">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Services</TableHead>
-                        <TableHead>Stylist</TableHead>
-                        <TableHead>Duration</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Status</TableHead>
+                        {sortableHead('Date', 'reservationTime')}
+                        {sortableHead('User', 'user.firstName')}
+                        {sortableHead('Services', 'treatments.name')}
+                        {sortableHead('Stylist', 'employee.firstName')}
+                        {sortableHead('Duration', 'sumDuration')}
+                        {sortableHead('Total', 'totalPrice')}
+                        {sortableHead('Status', 'status')}
                         <TableHead>Change Status</TableHead>
                     </TableRow>
                 </TableHeader>

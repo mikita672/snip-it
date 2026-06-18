@@ -13,6 +13,8 @@ export default function ReservationsTable() {
     const [search, setSearch] = useState('')
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
+    const [sort, setSort] = useState('reservationTime')
+    const [direction, setDirection] = useState('desc')
     const [loading, setLoading] = useState(false)
     const [updatingId, setUpdatingId] = useState<number | null>(null)
 
@@ -25,14 +27,24 @@ export default function ReservationsTable() {
         return () => clearTimeout(timer)
     }, [search])
 
+    const handleSort = (field: string) => {
+        if (sort === field) {
+            setDirection(d => d === 'asc' ? 'desc' : 'asc')
+        } else {
+            setSort(field)
+            setDirection('asc')
+        }
+        setPage(0)
+    }
+
     const fetchReservations = useCallback(async () => {
         setLoading(true)
         try {
             const params = new URLSearchParams({
                 page: String(page),
                 size: '10',
-                sort: 'reservationTime',
-                direction: 'desc',
+                sort,
+                direction,
             })
             
             if (debouncedSearch) {
@@ -54,7 +66,7 @@ export default function ReservationsTable() {
         } finally {
             setLoading(false)
         }
-    }, [page, debouncedSearch, statusFilter])
+    }, [page, debouncedSearch, statusFilter, sort, direction])
 
     useEffect(() => {
         fetchReservations()
@@ -101,11 +113,14 @@ export default function ReservationsTable() {
                 setPage={setPage}
             />
 
-            <ReservationsTableContent 
+            <ReservationsTableContent
                 loading={loading}
                 data={data}
                 updatingId={updatingId}
                 handleStatusChange={handleStatusChange}
+                handleSort={handleSort}
+                currentSort={sort}
+                currentDirection={direction}
             />
 
             <ReservationsPagination 

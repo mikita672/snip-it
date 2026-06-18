@@ -24,7 +24,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-6 md:px-24 md:py-12 py-6 px-4">
+      <div className="flex flex-col gap-6 px-[4%] py-6 md:py-12">
         <p className="text-center text-muted-foreground">Loading profile...</p>
       </div>
     );
@@ -32,7 +32,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
 
   if (error || !user) {
     return (
-      <div className="flex flex-col gap-6 md:px-24 md:py-12 py-6 px-4">
+      <div className="flex flex-col gap-6 px-[4%] py-6 md:py-12">
         <p className="text-center font-bold text-destructive">
           Failed to load profile
         </p>
@@ -43,7 +43,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
   const visibleTabs = tabs.filter((t) => !t.adminOnly || user.isAdmin);
 
   return (
-    <div className="flex flex-col gap-8 md:px-24 md:py-12 py-6 px-4 max-w-8xl mx-auto">
+    <div className="flex flex-col gap-8 px-[4%] py-6 md:py-12 w-full max-w-[1800px] mx-auto">
       <div className="flex flex-col gap-2 text-center md:text-left">
         <h1 className={`text-4xl ${bodoni.className}`}>Settings</h1>
         <p className="text-muted-foreground">
