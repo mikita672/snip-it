@@ -37,7 +37,7 @@ import com.snipit.backend.reservation.availability.AvailableEmployeeDTO;
 
 @Service
 public class ReservationService {
-    private final int REPUTATION_CANCELED_PENDING_PENALTY = 7;
+    private final int REPUTATION_CANCELED_PENDING_PENALTY = 10;
     private final int REPUTATION_CANCELED_CONFIRMED_PENALTY = 20;
     private final int REPUTATION_COMPLETED_BONUS = 10;
     private final int REPUTATION_AUTO_CONFIRM_TRESHOLD = 80;
