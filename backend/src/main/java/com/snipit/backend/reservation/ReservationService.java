@@ -10,6 +10,7 @@ import com.snipit.backend.reservation.dto.UserReservationPreviewDTO;
 import com.snipit.backend.reservation.dto.UserReservationsPageDTO;
 import com.snipit.backend.employee.EmployeeRepository;
 import com.snipit.backend.exceptions.ResourceNotFoundException;
+import com.snipit.backend.exceptions.ReservationLimitExceededException;
 import com.snipit.backend.treatment.TreatmentRepository;
 import com.snipit.backend.user.User;
 import com.snipit.backend.user.UserRepository;
@@ -41,6 +42,8 @@ public class ReservationService {
     private final int REPUTATION_CANCELED_CONFIRMED_PENALTY = 20;
     private final int REPUTATION_COMPLETED_BONUS = 10;
     private final int REPUTATION_AUTO_CONFIRM_TRESHOLD = 80;
+    private static final int MAX_ACTIVE_APPOINTMENTS = 2;
+    private static final Set<String> ACTIVE_STATUSES = Set.of("Pending", "Confirmed");
 
     private final ReservationMapper reservationMapper;
     private final ReservationRepository reservationRepository;
@@ -97,11 +100,10 @@ public class ReservationService {
                 Path<?> employee = root.get("employee");
                 Join<Reservation, Treatment> treatments = root.join("treatments");
                 predicates.add(cb.or(
-                    likeIgnoreCase(cb, employee.get("firstName"), searchLower),
-                    likeIgnoreCase(cb, employee.get("lastName"), searchLower),
-                    likeIgnoreCase(cb, root.get("status"), searchLower),
-                    likeIgnoreCase(cb, treatments.get("name"), searchLower)
-                ));
+                        likeIgnoreCase(cb, employee.get("firstName"), searchLower),
+                        likeIgnoreCase(cb, employee.get("lastName"), searchLower),
+                        likeIgnoreCase(cb, root.get("status"), searchLower),
+                        likeIgnoreCase(cb, treatments.get("name"), searchLower)));
                 query.distinct(true);
             }
 
@@ -123,7 +125,12 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User user) {
+    public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User principal) {
+        User user = userRepository.findByIdForUpdate(principal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + principal.getId()));
+
+        validateActiveAppointmentLimit(user);
+
         Employee employee = employeeRepository.findById(dto.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + dto.employeeId()));
 
@@ -183,14 +190,13 @@ public class ReservationService {
                 Path<?> user = root.get("user");
                 Join<Reservation, Treatment> treatments = root.join("treatments");
                 predicates.add(cb.or(
-                    likeIgnoreCase(cb, employee.get("firstName"), searchLower),
-                    likeIgnoreCase(cb, employee.get("lastName"), searchLower),
-                    likeIgnoreCase(cb, user.get("firstName"), searchLower),
-                    likeIgnoreCase(cb, user.get("lastName"), searchLower),
-                    likeIgnoreCase(cb, user.get("email"), searchLower),
-                    likeIgnoreCase(cb, root.get("status"), searchLower),
-                    likeIgnoreCase(cb, treatments.get("name"), searchLower)
-                ));
+                        likeIgnoreCase(cb, employee.get("firstName"), searchLower),
+                        likeIgnoreCase(cb, employee.get("lastName"), searchLower),
+                        likeIgnoreCase(cb, user.get("firstName"), searchLower),
+                        likeIgnoreCase(cb, user.get("lastName"), searchLower),
+                        likeIgnoreCase(cb, user.get("email"), searchLower),
+                        likeIgnoreCase(cb, root.get("status"), searchLower),
+                        likeIgnoreCase(cb, treatments.get("name"), searchLower)));
                 query.distinct(true);
             }
 
@@ -248,6 +254,15 @@ public class ReservationService {
 
     private static Predicate likeIgnoreCase(CriteriaBuilder cb, Path<?> path, String pattern) {
         return cb.like(cb.lower(path.as(String.class)), pattern);
+    }
+
+    private void validateActiveAppointmentLimit(User user) {
+        long activeCount = reservationRepository.countByUserAndStatusIn(user, ACTIVE_STATUSES);
+        if (activeCount >= MAX_ACTIVE_APPOINTMENTS) {
+            throw new ReservationLimitExceededException(
+                    "You cannot have more than " + MAX_ACTIVE_APPOINTMENTS
+                            + " active appointments at once. Please complete or cancel an existing one.");
+        }
     }
 
     @Transactional
