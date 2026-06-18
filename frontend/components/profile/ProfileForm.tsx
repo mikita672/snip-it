@@ -230,15 +230,17 @@ export default function ProfileForm({ user }: Props) {
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={handleCancel}
                   disabled={loading}
-                  className="cursor-pointer border-input hover:bg-muted/50"
+                  className="cursor-pointer"
                 >
                   <XIcon className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>{" "}
                 <Button
                   type="submit"
+                  size="sm"
                   disabled={loading}
                   className="cursor-pointer"
                 >
