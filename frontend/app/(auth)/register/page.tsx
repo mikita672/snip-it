@@ -215,7 +215,7 @@ function Register() {
                           {...field}
                           id={field.name}
                           aria-invalid={fieldState.invalid}
-                          placeholder="+1 234 567 890"
+                          placeholder="234 567 890"
                           className="bg-background"
                           type="tel"
                         />
