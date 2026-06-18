@@ -141,7 +141,7 @@ export default function EmployeeTable() {
                     placeholder="Search by name or email..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="max-w-sm"
+                    className="max-w-sm ring-1 ring-border"
                 />
                 <Button className="ml-auto" onClick={openCreate}>
                     Add new
@@ -222,6 +222,7 @@ export default function EmployeeTable() {
                                 <Input
                                     value={form.firstName}
                                     onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -229,6 +230,7 @@ export default function EmployeeTable() {
                                 <Input
                                     value={form.lastName}
                                     onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -236,6 +238,7 @@ export default function EmployeeTable() {
                                 <Input
                                     value={form.position}
                                     onChange={e => setForm(f => ({ ...f, position: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -244,6 +247,7 @@ export default function EmployeeTable() {
                                     type="email"
                                     value={form.email}
                                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -251,6 +255,7 @@ export default function EmployeeTable() {
                                 <Input
                                     value={form.phone}
                                     onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
 

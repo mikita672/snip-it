@@ -131,7 +131,7 @@ export default function TreatmentTable() {
                     placeholder="Search treatments..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="max-w-sm"
+                    className="max-w-sm ring-1 ring-border"
                 />
                 <Button className="ml-auto" onClick={openCreate}>
                     Add new
@@ -259,6 +259,7 @@ export default function TreatmentTable() {
                                 <Input
                                     value={editForm.name}
                                     onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -266,6 +267,7 @@ export default function TreatmentTable() {
                                 <Input
                                     value={editForm.description}
                                     onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -275,6 +277,7 @@ export default function TreatmentTable() {
                                     min={1}
                                     value={editForm.durationMinutes}
                                     onChange={e => setEditForm(f => ({ ...f, durationMinutes: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -285,6 +288,7 @@ export default function TreatmentTable() {
                                     min={0}
                                     value={editForm.price}
                                     onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
+                                    className="ring-1 ring-border"
                                 />
                             </label>
                         </div>

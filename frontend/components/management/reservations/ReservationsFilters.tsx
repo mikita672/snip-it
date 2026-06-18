@@ -25,7 +25,7 @@ export function ReservationsFilters({ search, setSearch, statusFilter, setStatus
                 placeholder="Search by user, stylist, or service..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="max-w-sm"
+                className="max-w-sm ring-1 ring-border"
             />
             <Select value={statusFilter} onValueChange={handleStatusChange}>
                 <SelectTrigger className="w-40">
