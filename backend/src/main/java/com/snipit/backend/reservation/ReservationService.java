@@ -37,7 +37,8 @@ import com.snipit.backend.reservation.availability.AvailableEmployeeDTO;
 
 @Service
 public class ReservationService {
-    private final int REPUTATION_CANCELED_PENALTY = 20;
+    private final int REPUTATION_CANCELED_PENDING_PENALTY = 10;
+    private final int REPUTATION_CANCELED_CONFIRMED_PENALTY = 20;
     private final int REPUTATION_COMPLETED_BONUS = 10;
     private final int REPUTATION_AUTO_CONFIRM_TRESHOLD = 80;
 
@@ -219,12 +220,17 @@ public class ReservationService {
             throw new RuntimeException("Unauthorized");
         }
 
+        String oldStatus = reservation.getStatus();
         reservation.setStatus(status);
         Reservation saved = reservationRepository.save(reservation);
 
         switch (status) {
             case "Cancelled" -> {
-                int reputation = Math.max(0, user.getReputation() - REPUTATION_CANCELED_PENALTY);
+                int penalty = switch (oldStatus) {
+                    case "Confirmed" -> REPUTATION_CANCELED_CONFIRMED_PENALTY;
+                    default -> REPUTATION_CANCELED_PENDING_PENALTY;
+                };
+                int reputation = Math.max(0, user.getReputation() - penalty);
                 user.setReputation(reputation);
                 userRepository.save(user);
             }
@@ -251,23 +257,6 @@ public class ReservationService {
 
         reservation.setStatus(status);
         Reservation saved = reservationRepository.save(reservation);
-
-        User owner = reservation.getUser();
-        switch (status) {
-            case "Cancelled" -> {
-                int reputation = Math.max(0, owner.getReputation() - REPUTATION_CANCELED_PENALTY);
-                owner.setReputation(reputation);
-                userRepository.save(owner);
-            }
-            case "Completed" -> {
-                int reputation = Math.min(100, owner.getReputation() + REPUTATION_COMPLETED_BONUS);
-                owner.setReputation(reputation);
-                userRepository.save(owner);
-            }
-            default -> {
-            }
-        }
-
         return reservationMapper.toResponseDTO(saved);
     }
 }
