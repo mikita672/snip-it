@@ -376,6 +376,7 @@ export default function ProfileForm({ user }: Props) {
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div />
                   <FormField
                     control={passwordForm.control}
                     name="confirmNewPassword"
