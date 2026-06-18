@@ -109,7 +109,7 @@ export default function ProfileForm({ user }: Props) {
           <CardTitle>Personal Information</CardTitle>
           <CardDescription>
             {isEditing
-              ? "Update your personal details, email, and phone number."
+              ? "Update your personal details and phone number."
               : "View your personal details and account information."}
           </CardDescription>
         </div>
@@ -182,13 +182,14 @@ export default function ProfileForm({ user }: Props) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email </FormLabel>
                     <FormControl>
                       {isEditing ? (
                         <Input
                           placeholder="john.doe@example.com"
                           {...field}
-                          className="border-primary/20"
+                          disabled
+                          className="border-primary/20 bg-muted/30 cursor-not-allowed"
                         />
                       ) : (
                         <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
