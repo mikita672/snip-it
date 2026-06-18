@@ -6,6 +6,7 @@ import Header from "@/components/header/Header";
 import { ThemeProvider } from "next-themes";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/Toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -41,13 +42,15 @@ export default function RootLayout({
                     defaultTheme="system"
                     enableSystem
                 >
-                    <div className="min-h-full flex flex-col">
-                        <Header />
-                        <div className="w-full py-6 px-4 md:py-12 md:px-24">
-                            {children}
+                    <AuthProvider>
+                        <div className="min-h-full flex flex-col">
+                            <Header />
+                            <div className="w-full py-6 px-4 md:py-12 md:px-24">
+                                {children}
+                            </div>
+                            <Footer />
                         </div>
-                        <Footer />
-                    </div>
+                    </AuthProvider>
 
                     <Toaster />
                 </ThemeProvider>

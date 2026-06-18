@@ -23,6 +23,7 @@ public class AuthController {
         private static final String ACCESS_COOKIE = "access_token";
         private static final String REFRESH_COOKIE = "refresh_token";
         private final AuthService authService;
+        private final AuthProperties authProperties;
 
         @PostMapping("/sign-up")
         public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
@@ -42,9 +43,16 @@ public class AuthController {
         }
 
         @PostMapping("/refresh")
-        public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_COOKIE) String refreshToken) {
-                AuthTokens tokens = authService.rotateRefreshToken(refreshToken);
-                return withAuthCookies(tokens, ResponseEntity.noContent());
+        public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_COOKIE, required = false) String refreshToken) {
+                if (refreshToken == null || refreshToken.isBlank()) {
+                        return clearAuthCookies(ResponseEntity.status(HttpStatus.UNAUTHORIZED));
+                }
+                try {
+                        AuthTokens tokens = authService.rotateRefreshToken(refreshToken);
+                        return withAuthCookies(tokens, ResponseEntity.noContent());
+                } catch (Exception e) {
+                        return clearAuthCookies(ResponseEntity.status(HttpStatus.UNAUTHORIZED));
+                }
         }
 
         @PostMapping("/logout")
@@ -61,12 +69,14 @@ public class AuthController {
                                 .httpOnly(true)
                                 .secure(false)
                                 .path("/")
+                                .maxAge(authProperties.getJwt().getExpirationTime())
                                 .sameSite("Strict")
                                 .build();
                 ResponseCookie refresh = ResponseCookie.from(REFRESH_COOKIE, tokens.refreshToken())
                                 .httpOnly(true)
                                 .secure(false)
                                 .path("/")
+                                .maxAge(authProperties.getRefreshToken().getExpirationTime())
                                 .sameSite("Strict")
                                 .build();
 

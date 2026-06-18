@@ -81,7 +81,7 @@ public class AuthService {
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
                 .orElseThrow();
         refreshTokenRepository.delete(stored);
-
+        
         User user = stored.getUser();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());

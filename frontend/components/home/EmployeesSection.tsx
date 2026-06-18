@@ -1,11 +1,12 @@
 import { EmployeePreview } from "@/types/employee/EmployeePreview";
 import { Item, ItemContent, ItemDescription, ItemFooter, ItemTitle } from "../ui/item";
 import { Badge } from "../ui/badge";
-import { serverFetch } from "@/lib/fetch";
+
 
 async function EmployeesSection() {
-	const response = await serverFetch('/api/employee/preview', {
+	const response = await fetch(`${process.env.APP_URL}/api/employee/preview`, {
 		method: "GET",
+		cache: "no-store",
 	});
 
 	if (!response.ok) {
@@ -35,10 +36,9 @@ async function EmployeesSection() {
 									<Badge key={j}>{treatment}</Badge>
 								))}
 
-								{
-									notListedCount <= 0 ? <></> :
-										<span>+{notListedCount}</span>
-								}
+								{notListedCount > 0 && (
+									<span>+{notListedCount}</span>
+								)}
 							</ItemDescription>
 							<ItemFooter className="opacity-75 text-xs">{employee.position}</ItemFooter>
 						</ItemContent>
