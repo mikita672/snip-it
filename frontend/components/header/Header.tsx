@@ -38,7 +38,7 @@ export default function Header() {
           </Link>
 
           <Link
-            href="/profile?tab=appointments"
+            href="/profile/appointments"
             className="text-sm text-primary cursor-pointer hover:opacity-75 uppercase"
           >
             My appointments
