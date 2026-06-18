@@ -4,4 +4,5 @@ export interface UserProfile {
     firstName: string;
     lastName: string;
     phone: string | null;
+    isAdmin: boolean;
 }

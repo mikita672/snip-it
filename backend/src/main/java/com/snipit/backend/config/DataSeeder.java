@@ -37,48 +37,56 @@ public class DataSeeder {
                 t1.setDescription("Classic men's haircut");
                 t1.setDurationMinutes(30);
                 t1.setPrice(new BigDecimal("25.00"));
+                t1.setIsActive(true);
 
                 Treatment t2 = new Treatment();
                 t2.setName("Women's Haircut");
                 t2.setDescription("Classic women's haircut");
                 t2.setDurationMinutes(45);
                 t2.setPrice(new BigDecimal("45.00"));
+                t2.setIsActive(true);
 
                 Treatment t3 = new Treatment();
                 t3.setName("Beard Trim");
                 t3.setDescription("Professional beard grooming");
                 t3.setDurationMinutes(15);
                 t3.setPrice(new BigDecimal("15.00"));
+                t3.setIsActive(true);
 
                 Treatment t4 = new Treatment();
                 t4.setName("Hair Coloring");
                 t4.setDescription("Full hair coloring service");
                 t4.setDurationMinutes(90);
                 t4.setPrice(new BigDecimal("85.00"));
+                t4.setIsActive(true);
 
                 Treatment t5 = new Treatment();
                 t5.setName("Highlights");
                 t5.setDescription("Foil highlights");
                 t5.setDurationMinutes(90);
                 t5.setPrice(new BigDecimal("110.00"));
+                t5.setIsActive(true);
 
                 Treatment t6 = new Treatment();
                 t6.setName("Blowout");
                 t6.setDescription("Wash, blowdry and style");
                 t6.setDurationMinutes(30);
                 t6.setPrice(new BigDecimal("35.00"));
+                t6.setIsActive(true);
 
                 Treatment t7 = new Treatment();
                 t7.setName("Kids Haircut");
                 t7.setDescription("Haircut for children under 12");
                 t7.setDurationMinutes(20);
                 t7.setPrice(new BigDecimal("20.00"));
+                t7.setIsActive(true);
 
                 Treatment t8 = new Treatment();
                 t8.setName("Bridal Styling");
                 t8.setDescription("Complete bridal hair styling");
                 t8.setDurationMinutes(60);
                 t8.setPrice(new BigDecimal("150.00"));
+                t8.setIsActive(true);
 
                 treatmentRepository.saveAll(List.of(t1, t2, t3, t4, t5, t6, t7, t8));
 

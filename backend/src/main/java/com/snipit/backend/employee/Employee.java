@@ -35,6 +35,9 @@ public class Employee {
     @Column(nullable = false)
     private String phone;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployeeSchedule> schedules = new ArrayList<>();
 

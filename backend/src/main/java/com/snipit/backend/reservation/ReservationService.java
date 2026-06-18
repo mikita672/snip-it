@@ -2,6 +2,8 @@ package com.snipit.backend.reservation;
 
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.treatment.Treatment;
+import com.snipit.backend.reservation.dto.AdminReservationPreviewDTO;
+import com.snipit.backend.reservation.dto.AdminReservationsPageDTO;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import com.snipit.backend.reservation.dto.UserReservationPreviewDTO;
@@ -21,7 +23,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -89,19 +93,18 @@ public class ReservationService {
 
             if (search != null && !search.isEmpty()) {
                 String searchLower = "%" + search.toLowerCase() + "%";
-                List<Predicate> searchPredicates = new ArrayList<>();
-
-                searchPredicates.add(cb.like(cb.lower(root.get("employee").get("firstName")), searchLower));
-                searchPredicates.add(cb.like(cb.lower(root.get("employee").get("lastName")), searchLower));
-                searchPredicates.add(cb.like(cb.lower(root.get("status")), searchLower));
-                Join<Reservation, Treatment> treatmentsJoin = root.join("treatments");
-                searchPredicates.add(cb.like(cb.lower(treatmentsJoin.get("name")), searchLower));
-
-                predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
+                Path<?> employee = root.get("employee");
+                Join<Reservation, Treatment> treatments = root.join("treatments");
+                predicates.add(cb.or(
+                    likeIgnoreCase(cb, employee.get("firstName"), searchLower),
+                    likeIgnoreCase(cb, employee.get("lastName"), searchLower),
+                    likeIgnoreCase(cb, root.get("status"), searchLower),
+                    likeIgnoreCase(cb, treatments.get("name"), searchLower)
+                ));
                 query.distinct(true);
             }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
+            return cb.and(predicates.toArray(Predicate[]::new));
         };
 
         Page<Reservation> reservationPage = reservationRepository.findAll(spec, pageable);
@@ -160,6 +163,53 @@ public class ReservationService {
         return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
     }
 
+    @Transactional(readOnly = true)
+    public AdminReservationsPageDTO getAllReservationsAdmin(int page, int size, String sort, String direction,
+            String search, String status) {
+        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        Specification<Reservation> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("all")) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (search != null && !search.isEmpty()) {
+                String searchLower = "%" + search.toLowerCase() + "%";
+                Path<?> employee = root.get("employee");
+                Path<?> user = root.get("user");
+                Join<Reservation, Treatment> treatments = root.join("treatments");
+                predicates.add(cb.or(
+                    likeIgnoreCase(cb, employee.get("firstName"), searchLower),
+                    likeIgnoreCase(cb, employee.get("lastName"), searchLower),
+                    likeIgnoreCase(cb, user.get("firstName"), searchLower),
+                    likeIgnoreCase(cb, user.get("lastName"), searchLower),
+                    likeIgnoreCase(cb, user.get("email"), searchLower),
+                    likeIgnoreCase(cb, root.get("status"), searchLower),
+                    likeIgnoreCase(cb, treatments.get("name"), searchLower)
+                ));
+                query.distinct(true);
+            }
+
+            return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(Predicate[]::new));
+        };
+
+        Page<Reservation> reservationPage = reservationRepository.findAll(spec, pageable);
+
+        List<AdminReservationPreviewDTO> dtos = reservationPage.getContent()
+                .stream()
+                .map(reservationMapper::toAdminReservationPreviewDTO)
+                .toList();
+
+        return new AdminReservationsPageDTO(
+                dtos,
+                reservationPage.getTotalPages(),
+                reservationPage.getTotalElements(),
+                reservationPage.getNumber());
+    }
+
     @Transactional
     public ReservationResponseDTO updateReservationStatus(Integer id, String status, User user) {
         Reservation reservation = reservationRepository.findById(id)
@@ -170,7 +220,6 @@ public class ReservationService {
         }
 
         reservation.setStatus(status);
-
         Reservation saved = reservationRepository.save(reservation);
 
         switch (status) {
@@ -183,6 +232,37 @@ public class ReservationService {
                 int reputation = Math.min(100, user.getReputation() + REPUTATION_COMPLETED_BONUS);
                 user.setReputation(reputation);
                 userRepository.save(user);
+            }
+            default -> {
+            }
+        }
+
+        return reservationMapper.toResponseDTO(saved);
+    }
+
+    private static Predicate likeIgnoreCase(CriteriaBuilder cb, Path<?> path, String pattern) {
+        return cb.like(cb.lower(path.as(String.class)), pattern);
+    }
+
+    @Transactional
+    public ReservationResponseDTO adminUpdateReservationStatus(Integer id, String status) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
+
+        reservation.setStatus(status);
+        Reservation saved = reservationRepository.save(reservation);
+
+        User owner = reservation.getUser();
+        switch (status) {
+            case "Cancelled" -> {
+                int reputation = Math.max(0, owner.getReputation() - REPUTATION_CANCELED_PENALTY);
+                owner.setReputation(reputation);
+                userRepository.save(owner);
+            }
+            case "Completed" -> {
+                int reputation = Math.min(100, owner.getReputation() + REPUTATION_COMPLETED_BONUS);
+                owner.setReputation(reputation);
+                userRepository.save(owner);
             }
             default -> {
             }

@@ -1,12 +1,13 @@
-import ProfileForm from "@/components/profile/ProfileForm";
-import AppointmentsTable from "@/components/appointments/AppointmentsTable";
-import { serverFetch } from "@/lib/fetch";
-import { UserProfile } from "@/types/user/UserProfile";
-import { UserReservationsPage } from "@/types/reservation/UserReservationPreview";
-import { redirect } from "next/navigation";
-import { Bodoni_Moda } from "next/font/google";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from "next/link";
+import ProfileForm from "@/components/profile/ProfileForm"
+import ManagementTab from "@/components/management/ManagementTab"
+import AppointmentsTable from "@/components/appointments/AppointmentsTable"
+import { serverFetch } from "@/lib/fetch"
+import { UserProfile } from "@/types/user/UserProfile"
+import { UserReservationsPage } from "@/types/reservation/UserReservationPreview"
+import { redirect } from "next/navigation"
+import { Bodoni_Moda } from "next/font/google"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Link from "next/link"
 
 const bodoni = Bodoni_Moda({
   subsets: ["latin"],
@@ -44,9 +45,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   const page = paramsObj.page ? parseInt(paramsObj.page as string) : 0;
   const size = paramsObj.size ? parseInt(paramsObj.size as string) : 5;
   const sort = paramsObj.sort ? (paramsObj.sort as string) : "reservationTime";
-  const direction = paramsObj.direction
-    ? (paramsObj.direction as string)
-    : "desc";
+  const direction = paramsObj.direction ? (paramsObj.direction as string) : "desc";
   const search = paramsObj.search ? (paramsObj.search as string) : "";
   const status = paramsObj.status ? (paramsObj.status as string) : "";
 
@@ -64,7 +63,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-8 md:px-24 md:py-12 py-6 px-4 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-8 md:px-24 md:py-12 py-6 px-4 max-w-8xl mx-auto">
       <div className="flex flex-col gap-2 text-center md:text-left">
         <h1 className={`text-4xl ${bodoni.className}`}>Settings</h1>
         <p className="text-muted-foreground">
@@ -73,17 +72,24 @@ export default async function ProfilePage({ searchParams }: Props) {
       </div>
 
       <Tabs defaultValue={activeTab} className="w-full">
-        <TabsList className="grid w-full md:w-100 grid-cols-2 bg-muted/50 border border-border/60">
+        <TabsList className={`grid w-full bg-muted/50 ${user.isAdmin ? "md:w-[600px] grid-cols-3" : "md:w-[400px] grid-cols-2"}`}>
           <TabsTrigger value="profile" asChild>
             <Link href="/profile?tab=profile">Profile</Link>
           </TabsTrigger>
           <TabsTrigger value="appointments" asChild>
             <Link href="/profile?tab=appointments">Appointments</Link>
           </TabsTrigger>
+          {user.isAdmin && (
+            <TabsTrigger value="management" asChild>
+              <Link href="/profile?tab=management">Management</Link>
+            </TabsTrigger>
+          )}
         </TabsList>
+
         <TabsContent value="profile" className="mt-6">
           <ProfileForm user={user} />
         </TabsContent>
+
         <TabsContent value="appointments" className="mt-6">
           {appointmentsData ? (
             <div className="flex flex-col gap-6">
@@ -103,6 +109,12 @@ export default async function ProfilePage({ searchParams }: Props) {
             </p>
           )}
         </TabsContent>
+
+        {user.isAdmin && (
+          <TabsContent value="management" className="mt-6">
+            <ManagementTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

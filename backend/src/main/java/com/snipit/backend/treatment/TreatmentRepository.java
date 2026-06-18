@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TreatmentRepository extends JpaRepository<Treatment, Integer> {
 	Page<Treatment> findByNameContainsIgnoreCase(String searchToken, Pageable pageable);
+	Page<Treatment> findByIsActiveTrue(Pageable pageable);
+	Page<Treatment> findByNameContainsIgnoreCaseAndIsActiveTrue(String searchToken, Pageable pageable);
 }

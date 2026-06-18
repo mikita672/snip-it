@@ -1,5 +1,6 @@
 package com.snipit.backend.reservation;
 
+import com.snipit.backend.reservation.dto.AdminReservationPreviewDTO;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import com.snipit.backend.reservation.dto.UserReservationPreviewDTO;
@@ -26,14 +27,29 @@ public class ReservationMapper {
     }
 
     public UserReservationPreviewDTO toUserReservationPreviewDTO(Reservation reservation) {
-        return new UserReservationPreviewDTO(
-                reservation.getId(),
-                reservation.getReservationTime(),
-                reservation.getTreatments().stream().map(Treatment::getName).toList(),
-                reservation.getEmployee().getFirstName() + " " + reservation.getEmployee().getLastName(),
-                reservation.getSumDuration(),
-                reservation.getTotalPrice(),
-                reservation.getStatus());
+        return UserReservationPreviewDTO.builder()
+                .id(reservation.getId())
+                .reservationTime(reservation.getReservationTime())
+                .treatments(reservation.getTreatments().stream().map(Treatment::getName).toList())
+                .employeeName(reservation.getEmployee().getFirstName() + " " + reservation.getEmployee().getLastName())
+                .durationMinutes(reservation.getSumDuration())
+                .totalPrice(reservation.getTotalPrice())
+                .status(reservation.getStatus())
+                .build();
+    }
+
+    public AdminReservationPreviewDTO toAdminReservationPreviewDTO(Reservation reservation) {
+        return AdminReservationPreviewDTO.builder()
+                .id(reservation.getId())
+                .reservationTime(reservation.getReservationTime())
+                .treatments(reservation.getTreatments().stream().map(Treatment::getName).toList())
+                .employeeName(reservation.getEmployee().getFirstName() + " " + reservation.getEmployee().getLastName())
+                .durationMinutes(reservation.getSumDuration())
+                .totalPrice(reservation.getTotalPrice())
+                .status(reservation.getStatus())
+                .userFullName(reservation.getUser().getFirstName() + " " + reservation.getUser().getLastName())
+                .userEmail(reservation.getUser().getEmail())
+                .build();
     }
 
     public Reservation toEntity(ReservationRequestDTO dto) {
