@@ -1,56 +1,68 @@
-import { Item, ItemContent, ItemDescription, ItemFooter, ItemTitle } from '../../ui/item';
-import { ClockIcon } from 'lucide-react';
-import TreatmentsPagination from './TreatmentsPagination';
-import { TreatmentsPreviewPage } from '@/types/treatment/TreatmentsPreviewPage';
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemFooter,
+  ItemTitle,
+} from "../../ui/item";
+import { ClockIcon } from "lucide-react";
+import TreatmentsPagination from "./TreatmentsPagination";
+import { TreatmentsPreviewPage } from "@/types/treatment/TreatmentsPreviewPage";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 interface Props {
-	params: URLSearchParams;
+  params: URLSearchParams;
 }
 
 async function TreatmentsResults({ params }: Props) {
-	const response = await fetch(`${process.env.APP_URL}/api/treatment/preview?${params.toString()}`, {
-		method: "GET",
-		cache: "no-store",
-	});
+  const response = await fetch(
+    `${process.env.API_URL}/treatment/preview?${params.toString()}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    },
+  );
 
-	if (!response.ok) {
-		return <p className="text-center font-bold">Failed to parse services</p>
-	}
+  if (!response.ok) {
+    return <p className="text-center font-bold">Failed to parse services</p>;
+  }
 
-	const data: TreatmentsPreviewPage = await response.json();
+  const data: TreatmentsPreviewPage = await response.json();
 
-	if (data.treatments.length === 0) {
-		return <p className="text-center font-bold">No services found...</p>
-	}
+  if (data.treatments.length === 0) {
+    return <p className="text-center font-bold">No services found...</p>;
+  }
 
-	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex flex-col gap-1">
-				{data.treatments.map((treatment) => (
-					<Link key={treatment.id} href={`/book?${params.toString()}&treatment=${treatment.id}`}>
-						<Item className="bg-card hover:opacity-75 cursor-pointer border-foreground border-opacity-75">
-							<ItemContent>
-								<ItemTitle className="w-full flex items-center justify-between">
-									<p className="font-bold">{treatment.name}</p>
-									<p className="font-bold">${treatment.price}</p>
-								</ItemTitle>
-								<ItemDescription>{treatment.description}</ItemDescription>
-								<ItemFooter>
-									<div className="flex items-center gap-2 opacity-35 text-xs">
-										<ClockIcon size={16} /> {treatment.durationMinutes} min
-									</div>
-								</ItemFooter>
-							</ItemContent>
-						</Item>
-					</Link>
-				))}
-			</div>
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        {data.treatments.map((treatment) => (
+          <Link
+            key={treatment.id}
+            href={`/book?${params.toString()}&treatment=${treatment.id}`}
+          >
+            <Item className="bg-card hover:opacity-75 cursor-pointer border-foreground border-opacity-75">
+              <ItemContent>
+                <ItemTitle className="w-full flex items-center justify-between">
+                  <p className="font-bold">{treatment.name}</p>
+                  <p className="font-bold">${treatment.price}</p>
+                </ItemTitle>
+                <ItemDescription>{treatment.description}</ItemDescription>
+                <ItemFooter>
+                  <div className="flex items-center gap-2 opacity-35 text-xs">
+                    <ClockIcon size={16} /> {treatment.durationMinutes} min
+                  </div>
+                </ItemFooter>
+              </ItemContent>
+            </Item>
+          </Link>
+        ))}
+      </div>
 
-			<TreatmentsPagination totalPages={data.totalPages} />
-		</div>
-	);
+      <TreatmentsPagination totalPages={data.totalPages} />
+    </div>
+  );
 }
 
-export default TreatmentsResults
+export default TreatmentsResults;
