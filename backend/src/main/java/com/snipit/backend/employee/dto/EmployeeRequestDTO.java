@@ -8,5 +8,6 @@ public record EmployeeRequestDTO(
 	String position,
 	String email,
 	String phone,
-	List<Integer> treatmentIds
+	List<Integer> treatmentIds,
+	List<ScheduleEntryDTO> schedule
 ) {}

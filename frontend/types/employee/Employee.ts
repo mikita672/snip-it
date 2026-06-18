@@ -1,4 +1,5 @@
 import { EmployeeTreatmentsPreview } from "./EmployeeTreatmentsPreview";
+import { ScheduleEntry } from "./ScheduleEntry";
 
 export type Employee = {
     id: number;
@@ -10,4 +11,5 @@ export type Employee = {
     isActive: boolean;
     treatmentIds: number[];
     treatmentsPreview: EmployeeTreatmentsPreview;
+    schedule: ScheduleEntry[];
 }

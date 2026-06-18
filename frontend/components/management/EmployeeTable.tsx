@@ -7,6 +7,44 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Employee } from '@/types/employee/Employee'
 import type { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
+import type { ScheduleEntry } from '@/types/employee/ScheduleEntry'
+
+const DAYS = [
+    { label: 'Mon', value: 1 },
+    { label: 'Tue', value: 2 },
+    { label: 'Wed', value: 3 },
+    { label: 'Thu', value: 4 },
+    { label: 'Fri', value: 5 },
+    { label: 'Sat', value: 6 },
+    { label: 'Sun', value: 7 },
+]
+
+interface ScheduleDay {
+    enabled: boolean
+    startTime: string
+    endTime: string
+}
+
+type ScheduleMap = Record<number, ScheduleDay>
+
+const defaultScheduleMap = (): ScheduleMap =>
+    Object.fromEntries(DAYS.map(d => [d.value, { enabled: false, startTime: '09:00', endTime: '17:00' }]))
+
+function scheduleMapFromEntries(entries: ScheduleEntry[]): ScheduleMap {
+    const map = defaultScheduleMap()
+    for (const e of entries) {
+        map[e.dayOfWeek] = { enabled: true, startTime: e.startTime.slice(0, 5), endTime: e.endTime.slice(0, 5) }
+    }
+    return map
+}
+
+function scheduleMapToEntries(map: ScheduleMap): ScheduleEntry[] {
+    return DAYS.filter(d => map[d.value].enabled).map(d => ({
+        dayOfWeek: d.value,
+        startTime: map[d.value].startTime,
+        endTime: map[d.value].endTime,
+    }))
+}
 
 interface EmployeeForm {
     firstName: string
@@ -33,6 +71,7 @@ export default function EmployeeTable() {
     const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
     const [isCreating, setIsCreating] = useState(false)
     const [form, setForm] = useState<EmployeeForm>(emptyForm)
+    const [scheduleMap, setScheduleMap] = useState<ScheduleMap>(defaultScheduleMap)
     const [availableTreatments, setAvailableTreatments] = useState<TreatmentPreview[]>([])
 
     const fetchEmployees = async () => {
@@ -77,6 +116,7 @@ export default function EmployeeTable() {
 
     const openCreate = () => {
         setForm(emptyForm)
+        setScheduleMap(defaultScheduleMap())
         setIsCreating(true)
         setEditingEmployee(null)
     }
@@ -92,6 +132,7 @@ export default function EmployeeTable() {
             phone: employee.phone,
             treatmentIds: employee.treatmentIds ?? [],
         })
+        setScheduleMap(scheduleMapFromEntries(employee.schedule ?? []))
     }
 
     const closeModal = () => {
@@ -107,13 +148,19 @@ export default function EmployeeTable() {
         const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(form),
+            body: JSON.stringify({ ...form, schedule: scheduleMapToEntries(scheduleMap) }),
         })
         if (res.ok) {
             await fetchEmployees()
             closeModal()
         }
     }
+
+    const toggleDay = (day: number) =>
+        setScheduleMap((m: ScheduleMap) => ({ ...m, [day]: { ...m[day], enabled: !m[day].enabled } }))
+
+    const setDayTime = (day: number, field: 'startTime' | 'endTime', value: string) =>
+        setScheduleMap((m: ScheduleMap) => ({ ...m, [day]: { ...m[day], [field]: value } }))
 
     const handleToggleActive = async (id: number) => {
         const res = await fetch(`/api/employee/${id}/toggle-active`, { method: 'PATCH' })
@@ -277,6 +324,42 @@ export default function EmployeeTable() {
                                     </div>
                                 </div>
                             )}
+
+                            <div className="flex flex-col gap-2 text-sm font-medium">
+                                Schedule
+                                <div className="flex flex-col gap-2 rounded-lg border p-3">
+                                    {DAYS.map(d => (
+                                        <div key={d.value} className="flex items-center gap-3">
+                                            <label className="flex items-center gap-2 w-10 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={scheduleMap[d.value].enabled}
+                                                    onChange={() => toggleDay(d.value)}
+                                                    className="accent-primary"
+                                                />
+                                                <span className="font-normal">{d.label}</span>
+                                            </label>
+                                            {scheduleMap[d.value].enabled && (
+                                                <div className="flex items-center gap-2 ml-2">
+                                                    <Input
+                                                        type="time"
+                                                        value={scheduleMap[d.value].startTime}
+                                                        onChange={e => setDayTime(d.value, 'startTime', e.target.value)}
+                                                        className="ring-1 ring-border h-8 w-28 text-xs"
+                                                    />
+                                                    <span className="text-muted-foreground">–</span>
+                                                    <Input
+                                                        type="time"
+                                                        value={scheduleMap[d.value].endTime}
+                                                        onChange={e => setDayTime(d.value, 'endTime', e.target.value)}
+                                                        className="ring-1 ring-border h-8 w-28 text-xs"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex gap-2 justify-end">
