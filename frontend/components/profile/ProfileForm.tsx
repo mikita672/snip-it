@@ -152,7 +152,7 @@ export default function ProfileForm({ user }: Props) {
         let message = "Failed to update password";
         try {
           const body = await response.json();
-          if (body?.message) message = body.message;
+          if (body?.message) {message = body.message;}
         } catch {}
         toast.error(message);
         return;

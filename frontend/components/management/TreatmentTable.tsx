@@ -55,7 +55,7 @@ export default function TreatmentTable() {
                 searchToken: debouncedSearch,
             })
             const res = await fetch(`/api/treatment?${params}`)
-            if (!res.ok) return
+            if (!res.ok) {return}
             const data: { treatments: Treatment[]; totalPages: number } = await res.json()
             setTreatments(data.treatments)
             setTotalPages(data.totalPages)
@@ -249,7 +249,7 @@ export default function TreatmentTable() {
             {(isCreating || editingTreatment) && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    onClick={e => { if (e.target === e.currentTarget) closeModal() }}
+                    onClick={e => { if (e.target === e.currentTarget) {closeModal()} }}
                 >
                     <div className="bg-popover rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl ring-1 ring-foreground/10 flex flex-col gap-4">
                         <h2 className="text-lg font-semibold">{isCreating ? 'Add Treatment' : 'Edit Treatment'}</h2>

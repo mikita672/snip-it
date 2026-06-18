@@ -97,7 +97,7 @@ export default function BookingFlow({
           "You cannot have more than 2 active appointments at once. Please complete or cancel an existing one.";
         try {
           const body = await response.json();
-          if (body?.message) message = body.message;
+          if (body?.message) {message = body.message;}
         } catch {}
         toast.error(message);
         return;

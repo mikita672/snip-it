@@ -16,6 +16,7 @@ const tabs = [
   { href: "/profile", label: "Profile" },
   { href: "/profile/appointments", label: "Appointments" },
   { href: "/profile/management", label: "Management", adminOnly: true },
+  { href: "/profile/statistics", label: "Statistics", adminOnly: true },
 ];
 
 export default function ProfileLayout({ children }: { children: ReactNode }) {
@@ -54,7 +55,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
       <nav
         className={cn(
           "grid w-full bg-muted/50 rounded-4xl p-0.75 text-muted-foreground h-9",
-          user.isAdmin ? "md:w-150 grid-cols-3" : "md:w-100 grid-cols-2",
+          user.isAdmin ? "md:w-200 grid-cols-4" : "md:w-100 grid-cols-2",
         )}
       >
         {visibleTabs.map((tab) => {
