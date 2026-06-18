@@ -73,7 +73,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       </div>
 
       <Tabs defaultValue={activeTab} className="w-full">
-        <TabsList className="grid w-full md:w-100 grid-cols-2 bg-muted/50">
+        <TabsList className="grid w-full md:w-100 grid-cols-2 bg-muted/50 border border-border/60">
           <TabsTrigger value="profile" asChild>
             <Link href="/profile?tab=profile">Profile</Link>
           </TabsTrigger>
