@@ -41,6 +41,13 @@ public class EmployeeDTOMapper {
 					.map(treatment -> treatment.getName())
 					.toList()
 			))
+			.schedule(employee.getSchedules().stream()
+				.map(s -> new ScheduleEntryDTO(
+					s.getDayOfWeek(),
+					s.getStartTime().toString(),
+					s.getEndTime().toString()
+				))
+				.toList())
 			.build();
 	}
 }

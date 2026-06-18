@@ -10,6 +10,7 @@ import {
 } from "../ui/dropdown-menu";
 import {
   ClipboardClockIcon,
+  LayoutDashboardIcon,
   LogOut,
   SquareChevronDownIcon,
   UserIcon,
@@ -66,6 +67,14 @@ function UserMenu({ user }: { user?: UserProfile | null }) {
               <p>Appointments</p>
             </DropdownMenuItem>
           </Link>
+          {user.isAdmin && (
+            <Link href="/profile/management">
+              <DropdownMenuItem className="cursor-pointer flex gap-2 items-center">
+                <LayoutDashboardIcon />
+                <p>Admin panel</p>
+              </DropdownMenuItem>
+            </Link>
+          )}
           <Separator />
           <DropdownMenuItem
             className="cursor-pointer flex gap-2 items-center"

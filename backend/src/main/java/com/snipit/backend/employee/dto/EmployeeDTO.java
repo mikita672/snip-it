@@ -14,5 +14,6 @@ public record EmployeeDTO(
 	String phone,
 	Boolean isActive,
 	List<Integer> treatmentIds,
-	EmployeeTreatmentsPreviewDTO treatmentsPreview
+	EmployeeTreatmentsPreviewDTO treatmentsPreview,
+	List<ScheduleEntryDTO> schedule
 ) {}
