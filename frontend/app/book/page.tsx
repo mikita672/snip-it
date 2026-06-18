@@ -1,6 +1,6 @@
 import BookingFlow from '@/components/book/BookingFlow'
 import { TreatmentsPreviewPage } from '@/types/treatment/TreatmentsPreviewPage'
-import { serverFetch } from '@/lib/fetch'
+
 
 interface Props {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -19,8 +19,9 @@ async function BookPage({ searchParams }: Props) {
         }
     });
 
-    const response = await serverFetch(`/api/treatment/preview?${params.toString()}`, {
+    const response = await fetch(`${process.env.APP_URL}/api/treatment/preview?${params.toString()}`, {
         method: 'GET',
+        cache: 'no-store',
     })
 
     if (!response.ok) {
