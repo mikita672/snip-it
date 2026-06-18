@@ -137,9 +137,13 @@ export default function ProfileForm({ user }: Props) {
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
                       {isEditing ? (
-                        <Input placeholder="John" {...field} />
+                        <Input
+                          placeholder="John"
+                          {...field}
+                          className="border-primary/20"
+                        />
                       ) : (
-                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                        <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
                           {field.value}
                         </div>
                       )}
@@ -156,9 +160,13 @@ export default function ProfileForm({ user }: Props) {
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
                       {isEditing ? (
-                        <Input placeholder="Doe" {...field} />
+                        <Input
+                          placeholder="Doe"
+                          {...field}
+                          className="border-primary/20"
+                        />
                       ) : (
-                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                        <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
                           {field.value}
                         </div>
                       )}
@@ -177,9 +185,13 @@ export default function ProfileForm({ user }: Props) {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       {isEditing ? (
-                        <Input placeholder="john.doe@example.com" {...field} />
+                        <Input
+                          placeholder="john.doe@example.com"
+                          {...field}
+                          className="border-primary/20"
+                        />
                       ) : (
-                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                        <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
                           {field.value}
                         </div>
                       )}
@@ -200,9 +212,10 @@ export default function ProfileForm({ user }: Props) {
                           placeholder="234 567 890"
                           {...field}
                           value={field.value || ""}
+                          className="border-primary/20"
                         />
                       ) : (
-                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                        <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
                           {field.value}
                         </div>
                       )}
@@ -216,14 +229,14 @@ export default function ProfileForm({ user }: Props) {
               <div className="flex justify-end gap-4">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   onClick={handleCancel}
                   disabled={loading}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-input hover:bg-muted/50"
                 >
                   <XIcon className="mr-2 h-4 w-4" />
                   Cancel
-                </Button>
+                </Button>{" "}
                 <Button
                   type="submit"
                   disabled={loading}
