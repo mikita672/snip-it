@@ -24,6 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { PencilIcon, XIcon, SaveIcon } from "lucide-react";
 
 const profileSchema = z.object({
   firstName: z
@@ -51,6 +52,7 @@ interface Props {
 
 export default function ProfileForm({ user }: Props) {
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
 
   const form = useForm<ProfileFormValues>({
@@ -81,6 +83,7 @@ export default function ProfileForm({ user }: Props) {
       }
 
       toast.success("Profile updated successfully");
+      setIsEditing(false);
       router.refresh();
     } catch {
       toast.error("Failed to update profile");
@@ -89,15 +92,40 @@ export default function ProfileForm({ user }: Props) {
     }
   }
 
+  const handleCancel = () => {
+    form.reset({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email,
+      phone: user.phone || "",
+    });
+    setIsEditing(false);
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
-        <CardDescription>
-          Update your personal details, email, and phone number.
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <div className="space-y-1">
+          <CardTitle>Personal Information</CardTitle>
+          <CardDescription>
+            {isEditing
+              ? "Update your personal details, email, and phone number."
+              : "View your personal details and account information."}
+          </CardDescription>
+        </div>
+        {!isEditing && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="cursor-pointer"
+          >
+            <PencilIcon className="mr-2 h-4 w-4" />
+            Edit Profile
+          </Button>
+        )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -108,7 +136,13 @@ export default function ProfileForm({ user }: Props) {
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" {...field} />
+                      {isEditing ? (
+                        <Input placeholder="John" {...field} />
+                      ) : (
+                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                          {field.value}
+                        </div>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,7 +155,13 @@ export default function ProfileForm({ user }: Props) {
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      {isEditing ? (
+                        <Input placeholder="Doe" {...field} />
+                      ) : (
+                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                          {field.value}
+                        </div>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -136,7 +176,13 @@ export default function ProfileForm({ user }: Props) {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john.doe@example.com" {...field} />
+                      {isEditing ? (
+                        <Input placeholder="john.doe@example.com" {...field} />
+                      ) : (
+                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                          {field.value}
+                        </div>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,22 +195,51 @@ export default function ProfileForm({ user }: Props) {
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="234 567 890"
-                        {...field}
-                        value={field.value || ""}
-                      />
+                      {isEditing ? (
+                        <Input
+                          placeholder="234 567 890"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      ) : (
+                        <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 flex items-center text-sm">
+                          {field.value}
+                        </div>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
+            {isEditing && (
+              <div className="flex justify-end gap-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleCancel}
+                  disabled={loading}
+                  className="cursor-pointer"
+                >
+                  <XIcon className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="cursor-pointer"
+                >
+                  {loading ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <SaveIcon className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </form>
         </Form>
       </CardContent>
