@@ -60,7 +60,6 @@ export default function ProfileForm({ user }: Props) {
     defaultValues: {
       firstName: user.firstName || "",
       lastName: user.lastName || "",
-      email: user.email,
       phone: user.phone || "",
     },
   });
@@ -177,30 +176,12 @@ export default function ProfileForm({ user }: Props) {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email </FormLabel>
-                    <FormControl>
-                      {isEditing ? (
-                        <Input
-                          placeholder="john.doe@example.com"
-                          {...field}
-                          disabled
-                          className="border-primary/20 bg-muted/30 cursor-not-allowed"
-                        />
-                      ) : (
-                        <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
-                          {field.value}
-                        </div>
-                      )}
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <div className="h-9 px-3 py-2 rounded-4xl border border-input bg-muted/30 flex items-center text-sm">
+                  {user.email}
+                </div>
+              </FormItem>
               <FormField
                 control={form.control}
                 name="phone"
