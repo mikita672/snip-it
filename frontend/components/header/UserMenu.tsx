@@ -8,7 +8,9 @@ import { Separator } from "../ui/separator";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-function UserMenu({ email }: { email?: string | null }) {
+import { UserProfile } from "@/types/user/UserProfile";
+
+function UserMenu({ user }: { user?: UserProfile | null }) {
     const router = useRouter();
 
     const handleLogout = async () => {
@@ -25,16 +27,17 @@ function UserMenu({ email }: { email?: string | null }) {
         }
     }
 
-	if (email) {
+	if (user !== undefined && user !== null) {
 		return (
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<div className="flex items-center gap-2 cursor-pointer">
 						<UserIcon />
-						<div className="flex gap-1 items-center">
-							<p>{email}</p>
-							<SquareChevronDownIcon size={20} />
+						<div className="flex flex-col gap-0 items-start">
+							<p className="text-sm font-medium leading-none">{user.firstName} {user.lastName}</p>
+							<p className="text-xs text-muted-foreground">{user.email}</p>
 						</div>
+						<SquareChevronDownIcon size={20} className="ml-1" />
 					</div>
 				</DropdownMenuTrigger>
 

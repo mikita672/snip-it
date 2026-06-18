@@ -23,20 +23,6 @@ export const proxy = async (request: NextRequest) => {
     const isApi = request.nextUrl.pathname.startsWith('/api');
 
     if (!isApi) {
-        const hasToken = request.cookies.has('access_token');
-        if (!hasToken) {
-            const refresh = await fetch(`${process.env.API_URL}/auth/refresh`, {
-                method: "POST",
-                headers: request.headers
-            });
-            if (!refresh.ok) {
-                return NextResponse.redirect(new URL('/login', request.url));
-            }
-            const newCookies = refresh.headers.getSetCookie();
-            const response = NextResponse.next();
-            newCookies.forEach((cookie) => response.headers.append('Set-Cookie', cookie));
-            return response;
-        }
         return NextResponse.next();
     }
 
@@ -54,7 +40,7 @@ export const proxy = async (request: NextRequest) => {
     const response = await fetch(url, {
         method: request.method,
         headers: forwardHeaders,
-        body: requestBody && requestBody.length > 0 ? requestBody : undefined
+        body: requestBody !== undefined && requestBody.length > 0 ? requestBody : undefined
     });
 
     const isAuthEndpoint = endpoint.startsWith('/auth/');
@@ -65,7 +51,7 @@ export const proxy = async (request: NextRequest) => {
 
     const refresh = await fetch(`${process.env.API_URL}/auth/refresh`, {
         method: "POST",
-        headers: request.headers
+        headers: forwardHeaders
     });
 
     if (!refresh.ok) {
@@ -73,13 +59,21 @@ export const proxy = async (request: NextRequest) => {
     }
 
     const newCookies = refresh.headers.getSetCookie();
-    const retryHeaders = new Headers(request.headers);
-    retryHeaders.set('Cookie', newCookies.join('; '));
+    const retryHeaders = new Headers(forwardHeaders);
+
+    const parsedCookies = newCookies.map(cookieStr => cookieStr.split(';')[0]);
+
+    const originalCookies = request.headers.get('Cookie');
+    if (originalCookies !== null) {
+        retryHeaders.set('Cookie', parsedCookies.join('; ') + '; ' + originalCookies);
+    } else {
+        retryHeaders.set('Cookie', parsedCookies.join('; '));
+    }
 
     const retryResponse = await fetch(url, {
         method: request.method,
         headers: retryHeaders,
-        body: requestBody && requestBody.length > 0 ? requestBody : undefined
+        body: requestBody !== undefined && requestBody.length > 0 ? requestBody : undefined
     });
 
     const finalResponse = buildResponse(
@@ -96,5 +90,5 @@ export const proxy = async (request: NextRequest) => {
 };
 
 export const config = {
-    matcher: ["/api/:path*", "/book"],
+    matcher: ["/api/:path*", "/book", "/profile", "/appointments"],
 };

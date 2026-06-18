@@ -1,13 +1,16 @@
-import ProfileForm from "@/components/profile/ProfileForm"
-import ManagementTab from "@/components/management/ManagementTab"
-import AppointmentsTable from "@/components/appointments/AppointmentsTable"
-import { serverFetch } from "@/lib/fetch"
-import { UserProfile } from "@/types/user/UserProfile"
-import { UserReservationsPage } from "@/types/reservation/UserReservationPreview"
-import { redirect } from "next/navigation"
-import { Bodoni_Moda } from "next/font/google"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Link from "next/link"
+"use client";
+
+import ProfileForm from "@/components/profile/ProfileForm";
+import ManagementTab from "@/components/management/ManagementTab";
+import AppointmentsTable from "@/components/appointments/AppointmentsTable";
+import { UserProfile } from "@/types/user/UserProfile";
+import { UserReservationsPage } from "@/types/reservation/UserReservationPreview";
+import { useRouter } from "next/navigation";
+import { Bodoni_Moda } from "next/font/google";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
+import { use, useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const bodoni = Bodoni_Moda({
   subsets: ["latin"],
@@ -18,19 +21,68 @@ interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function ProfilePage({ searchParams }: Props) {
-  const paramsObj = await searchParams;
+export default function ProfilePage({ searchParams }: Props) {
+  const paramsObj = use(searchParams);
   const activeTab = (paramsObj.tab as string) || "profile";
+  const router = useRouter();
 
-  const profileResponse = await serverFetch("/api/user/profile", {
-    method: "GET",
-  });
+  const { user, loading: loadingProfile, error: profileError } = useAuth();
+  const [appointmentsData, setAppointmentsData] = useState<UserReservationsPage | null>(null);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
 
-  if (profileResponse.status === 401) {
-    redirect("/login");
+  useEffect(() => {
+    if (!loadingProfile && !user) {
+      router.push("/login");
+    }
+  }, [loadingProfile, user, router]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const page = paramsObj.page ? parseInt(paramsObj.page as string) : 0;
+    const size = paramsObj.size ? parseInt(paramsObj.size as string) : 5;
+    const sort = paramsObj.sort ? (paramsObj.sort as string) : "reservationTime";
+    const direction = paramsObj.direction ? (paramsObj.direction as string) : "desc";
+    const search = paramsObj.search ? (paramsObj.search as string) : "";
+    const status = paramsObj.status ? (paramsObj.status as string) : "";
+
+    let appointmentsUrl = `/api/reservation/my-appointments?page=${page}&size=${size}&sort=${sort}&direction=${direction}`;
+    if (search) {
+      appointmentsUrl += `&search=${encodeURIComponent(search)}`;
+    }
+    if (status) {
+      appointmentsUrl += `&status=${encodeURIComponent(status)}`;
+    }
+
+    fetch(appointmentsUrl, {
+      method: "GET",
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        return null;
+      })
+      .then((data) => {
+        if (data) {
+          setAppointmentsData(data);
+        }
+        setLoadingAppointments(false);
+      })
+      .catch(() => { setLoadingAppointments(false); });
+  }, [user, paramsObj]);
+
+  if (loadingProfile) {
+    return (
+      <div className="flex flex-col gap-6 md:px-24 md:py-12 py-6 px-4">
+        <p className="text-center text-muted-foreground">Loading profile...</p>
+      </div>
+    );
   }
 
-  if (!profileResponse.ok) {
+  if (profileError || !user) {
     return (
       <div className="flex flex-col gap-6 md:px-24 md:py-12 py-6 px-4">
         <p className="text-center font-bold text-destructive">
@@ -38,28 +90,6 @@ export default async function ProfilePage({ searchParams }: Props) {
         </p>
       </div>
     );
-  }
-
-  const user: UserProfile = await profileResponse.json();
-
-  const page = paramsObj.page ? parseInt(paramsObj.page as string) : 0;
-  const size = paramsObj.size ? parseInt(paramsObj.size as string) : 5;
-  const sort = paramsObj.sort ? (paramsObj.sort as string) : "reservationTime";
-  const direction = paramsObj.direction ? (paramsObj.direction as string) : "desc";
-  const search = paramsObj.search ? (paramsObj.search as string) : "";
-  const status = paramsObj.status ? (paramsObj.status as string) : "";
-
-  let appointmentsUrl = `/api/reservation/my-appointments?page=${page}&size=${size}&sort=${sort}&direction=${direction}`;
-  if (search) appointmentsUrl += `&search=${encodeURIComponent(search)}`;
-  if (status) appointmentsUrl += `&status=${encodeURIComponent(status)}`;
-
-  const appointmentsResponse = await serverFetch(appointmentsUrl, {
-    method: "GET",
-  });
-
-  let appointmentsData: UserReservationsPage | null = null;
-  if (appointmentsResponse.ok) {
-    appointmentsData = await appointmentsResponse.json();
   }
 
   return (
@@ -91,7 +121,9 @@ export default async function ProfilePage({ searchParams }: Props) {
         </TabsContent>
 
         <TabsContent value="appointments" className="mt-6">
-          {appointmentsData ? (
+          {loadingAppointments ? (
+            <p className="text-center text-muted-foreground">Loading appointments...</p>
+          ) : appointmentsData ? (
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <h2 className={`text-2xl ${bodoni.className}`}>
