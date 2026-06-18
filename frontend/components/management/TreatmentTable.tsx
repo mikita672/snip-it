@@ -267,6 +267,7 @@ export default function TreatmentTable() {
                                     value={editForm.name}
                                     onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
                                     className="ring-1 ring-border"
+                                    placeholder="e.g. Haircut"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -275,6 +276,7 @@ export default function TreatmentTable() {
                                     value={editForm.description}
                                     onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
                                     className="ring-1 ring-border"
+                                    placeholder="Short description (optional)"
                                 />
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
@@ -283,6 +285,7 @@ export default function TreatmentTable() {
                                     type="number"
                                     min={1}
                                     value={editForm.durationMinutes}
+                                    placeholder="30"
                                     onChange={e => {
                                         setEditForm(f => ({ ...f, durationMinutes: e.target.value }))
                                         setFormErrors(err => ({ ...err, durationMinutes: undefined }))
@@ -300,6 +303,7 @@ export default function TreatmentTable() {
                                     step="0.01"
                                     min={0}
                                     value={editForm.price}
+                                    placeholder="0.00"
                                     onChange={e => {
                                         setEditForm(f => ({ ...f, price: e.target.value }))
                                         setFormErrors(err => ({ ...err, price: undefined }))
