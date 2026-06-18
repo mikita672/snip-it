@@ -1,19 +1,13 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { UserReservationsPage, UserReservationPreview } from '@/types/reservation/UserReservationPreview';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { UserReservationsPage } from '@/types/reservation/UserReservationPreview';
 import { toast } from 'sonner';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Field } from '@/components/ui/field';
-import { ButtonGroup } from '@/components/ui/button-group';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+
+import { AppointmentsFilters } from './AppointmentsFilters';
+import { AppointmentsTableContent } from './AppointmentsTableContent';
+import { AppointmentsPagination } from './AppointmentsPagination';
 
 interface Props {
     initialData: UserReservationsPage;
@@ -23,8 +17,9 @@ export default function AppointmentsTable({ initialData }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const [isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
     const [loadingId, setLoadingId] = useState<number | null>(null);
+
     const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
 
     const currentSort = searchParams.get('sort') || 'reservationTime';
@@ -35,6 +30,7 @@ export default function AppointmentsTable({ initialData }: Props) {
     useEffect(() => {
         const timer = setTimeout(() => {
             const currentSearchParam = searchParams.get('search') || '';
+
             if (searchValue !== currentSearchParam) {
                 updateParams({ search: searchValue || null });
             }
@@ -45,6 +41,7 @@ export default function AppointmentsTable({ initialData }: Props) {
 
     const updateParams = (updates: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());
+        
         Object.entries(updates).forEach(([key, value]) => {
             if (value === null || value === 'all') {
                 params.delete(key);
@@ -72,11 +69,6 @@ export default function AppointmentsTable({ initialData }: Props) {
         updateParams({ sort: field, direction });
     };
 
-    const SortIcon = ({ field }: { field: string }) => {
-        if (currentSort !== field) return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
-        return currentDirection === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />;
-    };
-
     const handleCancel = async (id: number) => {
         setLoadingId(id);
         try {
@@ -99,243 +91,37 @@ export default function AppointmentsTable({ initialData }: Props) {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        const s = status.toLowerCase();
-        if (s.includes('pending')) {
-            return <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300">Pending</Badge>;
-        }
-        if (s.includes('confirm') || s.includes('complet')) {
-            return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300">{status}</Badge>;
-        }
-        if (s.includes('cancel')) {
-            return <Badge variant="destructive">{status}</Badge>;
-        }
-        return <Badge variant="outline">{status}</Badge>;
-    };
-
     const startItem = initialData.currentPage * Number(currentSize) + 1;
     const endItem = Math.min((initialData.currentPage + 1) * Number(currentSize), initialData.totalElements);
 
     return (
         <div className="w-full space-y-4">
-            <div className="flex flex-col md:flex-row items-end justify-between gap-4">
-                <form action={handleSearch} className="w-full max-w-md">
-                    <Field className="bg-card">
-                        <ButtonGroup>
-                            <InputGroup>
-                                <InputGroupAddon>
-                                    <Search className="size-4" />
-                                </InputGroupAddon>
-                                <InputGroupInput
-                                    name="search"
-                                    type="search"
-                                    placeholder="Search appointments..."
-                                    value={searchValue}
-                                    onChange={(e) => setSearchValue(e.target.value)}
-                                />
-                            </InputGroup>
-                            <Button
-                                className="cursor-pointer hover:opacity-75"
-                                type="submit"
-                            >Search</Button>
-                        </ButtonGroup>
-                    </Field>
-                </form>
+            <AppointmentsFilters
+                searchValue={searchValue}
+                setSearchValue={setSearchValue}
+                handleSearch={handleSearch}
+                currentStatus={currentStatus}
+                currentSize={currentSize}
+                updateParams={updateParams}
+            />
 
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                    <Select
-                        value={currentStatus}
-                        onValueChange={(value) => updateParams({ status: value })}
-                    >
-                        <SelectTrigger className="w-37.5">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Confirmed">Confirmed</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                    </Select>
+            <AppointmentsTableContent
+                reservations={initialData.reservations}
+                handleSort={handleSort}
+                currentSort={currentSort}
+                currentDirection={currentDirection}
+                loadingId={loadingId}
+                handleCancel={handleCancel}
+            />
 
-                    <Select
-                        value={currentSize}
-                        onValueChange={(value) => updateParams({ size: value })}
-                    >
-                        <SelectTrigger className="w-25">
-                            <SelectValue placeholder="Rows" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="5">5 rows</SelectItem>
-                            <SelectItem value="10">10 rows</SelectItem>
-                            <SelectItem value="20">20 rows</SelectItem>
-                            <SelectItem value="50">50 rows</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            <div className="rounded-md border bg-card overflow-hidden">
-                <Table className="table-fixed">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead 
-                                className="w-45 cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => handleSort('reservationTime')}
-                            >
-                                <div className="flex items-center">
-                                    DATE <SortIcon field="reservationTime" />
-                                </div>
-                            </TableHead>
-                            <TableHead 
-                                className="w-62.5 cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => handleSort('treatments.name')}
-                            >
-                                <div className="flex items-center">
-                                    SERVICES <SortIcon field="treatments.name" />
-                                </div>
-                            </TableHead>
-                            <TableHead 
-                                className="w-37.5 cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => handleSort('employee.firstName')}
-                            >
-                                <div className="flex items-center">
-                                    STYLIST <SortIcon field="employee.firstName" />
-                                </div>
-                            </TableHead>
-                            <TableHead 
-                                className="w-27.5 cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => handleSort('sumDuration')}
-                            >
-                                <div className="flex items-center">
-                                    DURATION <SortIcon field="sumDuration" />
-                                </div>
-                            </TableHead>
-                            <TableHead 
-                                className="w-25 cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => handleSort('totalPrice')}
-                            >
-                                <div className="flex items-center">
-                                    TOTAL <SortIcon field="totalPrice" />
-                                </div>
-                            </TableHead>
-                            <TableHead 
-                                className="w-30 cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => handleSort('status')}
-                            >
-                                <div className="flex items-center">
-                                    STATUS <SortIcon field="status" />
-                                </div>
-                            </TableHead>
-                            <TableHead className="w-25 text-center">ACTIONS</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {initialData.reservations.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    No appointments found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            initialData.reservations.map((res) => {
-                                const dateObj = new Date(res.reservationTime);
-                                const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-                                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-                                return (
-                                    <TableRow key={res.id}>
-                                        <TableCell className="truncate">
-                                            <div className="font-medium">{dateStr}</div>
-                                            <div className="text-sm text-muted-foreground">{timeStr}</div>
-                                        </TableCell>
-                                        <TableCell className="truncate" title={res.treatments.join(', ')}>
-                                            {res.treatments.join(', ')}
-                                        </TableCell>
-                                        <TableCell className="truncate">{res.employeeName}</TableCell>
-                                        <TableCell className="truncate">{res.durationMinutes} min</TableCell>
-                                        <TableCell className="truncate">${res.totalPrice}</TableCell>
-                                        <TableCell className="truncate">
-                                            {getStatusBadge(res.status)}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-4">
-                                                {res.status.toLowerCase().includes('pending') && (
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                disabled={loadingId === res.id}
-                                                                className="text-sm text-destructive hover:underline disabled:opacity-50 px-0 hover:bg-transparent h-auto"
-                                                            >
-                                                                {loadingId === res.id ? '...' : 'Cancel'}
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Are you sure you want to cancel this appointment? This action cannot be undone.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Don't cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleCancel(res.id)}>Yes, cancel</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            {initialData.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                    <div className="text-sm text-muted-foreground">
-                        {startItem}-{endItem} of {initialData.totalElements}
-                    </div>
-                    <Pagination className="mx-0 w-auto">
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    text=""
-                                    onClick={() => updateParams({ page: Math.max(0, initialData.currentPage - 1).toString() })}
-                                    isActive={initialData.currentPage === 0}
-                                    className={initialData.currentPage === 0 ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
-                                />
-                            </PaginationItem>
-
-                            {Array.from({ length: initialData.totalPages }).map((_, i) => (
-                                <PaginationItem key={i}>
-                                    <PaginationLink
-                                        onClick={() => updateParams({ page: i.toString() })}
-                                        isActive={initialData.currentPage === i}
-                                        className="cursor-pointer"
-                                    >
-                                        {i + 1}
-                                    </PaginationLink>
-                                </PaginationItem>
-                            ))}
-
-                            <PaginationItem>
-                                <PaginationNext
-                                    text=""
-                                    onClick={() => updateParams({ page: Math.min(initialData.totalPages - 1, initialData.currentPage + 1).toString() })}
-                                    isActive={initialData.currentPage === initialData.totalPages - 1}
-                                    className={initialData.currentPage === initialData.totalPages - 1 ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
-                </div>
-            )}
+            <AppointmentsPagination
+                startItem={startItem}
+                endItem={endItem}
+                totalElements={initialData.totalElements}
+                totalPages={initialData.totalPages}
+                currentPage={initialData.currentPage}
+                updateParams={updateParams}
+            />
         </div>
     );
 }

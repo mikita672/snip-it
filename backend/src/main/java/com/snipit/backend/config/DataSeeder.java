@@ -132,9 +132,16 @@ public class DataSeeder {
                 user.setEmail("client@example.com");
                 user.setFirstName("Demo");
                 user.setLastName("Client");
-                user.setReputation(90);
                 user.setPasswordHash(passwordEncoder.encode("password"));
                 userRepository.save(user);
+
+                User admin = new User();
+                admin.setEmail("admin@admin.com");
+                admin.setFirstName("Demo");
+                admin.setLastName("Admin");
+                admin.setIsAdmin(true);
+                admin.setPasswordHash(passwordEncoder.encode("admin"));
+                userRepository.save(admin);
 
                 String[] statuses = { "Pending", "Confirmed", "Cancelled", "Completed" };
                 List<Employee> allEmployees = List.of(e1, e2, e3, e4);

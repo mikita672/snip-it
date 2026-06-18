@@ -3,7 +3,7 @@
 import { useState } from "react"
 import TreatmentTable from "@/components/management/TreatmentTable"
 import EmployeeTable from "@/components/management/EmployeeTable"
-import AdminReservationsTable from "@/components/management/AdminReservationsTable"
+import ReservationsTable from "@/components/management/reservations/ReservationsTable"
 
 type EntityType = 'reservations' | 'employees' | 'treatments'
 
@@ -40,7 +40,7 @@ export default function ManagementTab() {
             <main className="flex-1 min-w-0 py-2 md:py-0">
                 {selectedEntity === 'treatments' && <TreatmentTable />}
                 {selectedEntity === 'employees' && <EmployeeTable />}
-                {selectedEntity === 'reservations' && <AdminReservationsTable />}
+                {selectedEntity === 'reservations' && <ReservationsTable />}
             </main>
         </div>
     )
