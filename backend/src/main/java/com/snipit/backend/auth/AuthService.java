@@ -10,7 +10,6 @@ import java.util.Map;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import static org.springframework.security.core.userdetails.User.builder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,15 +44,12 @@ public class AuthService {
         user.setIsAdmin(false);
         repository.save(user);
 
-        UserDetails userDetails = builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
-                .build();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());
         extra.put("isAdmin", user.getIsAdmin());
-        String accessToken = jwtService.generateToken(extra, userDetails);
+        String accessToken = jwtService.generateToken(extra, builder()
+                .username(user.getEmail())
+                .build());
         String refreshToken = issueRefreshToken(user);
         return new AuthTokens(accessToken, refreshToken);
     }
@@ -62,15 +58,12 @@ public class AuthService {
         authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(email, password));
         User user = repository.findByEmail(email).orElseThrow();
-        UserDetails userDetails = builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
-                .build();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());
         extra.put("isAdmin", user.getIsAdmin());
-        String accessToken = jwtService.generateToken(extra, userDetails);
+        String accessToken = jwtService.generateToken(extra, builder()
+                .username(user.getEmail())
+                .build());
         String refreshToken = issueRefreshToken(user);
         return new AuthTokens(accessToken, refreshToken);
     }
@@ -81,15 +74,13 @@ public class AuthService {
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
                 .orElseThrow();
         refreshTokenRepository.delete(stored);
-        
+
         User user = stored.getUser();
         Map<String, Object> extra = new HashMap<>();
         extra.put("userId", user.getId());
         extra.put("isAdmin", user.getIsAdmin());
         String newAccess = jwtService.generateToken(extra, builder()
                 .username(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                 .build());
         String newRefresh = issueRefreshToken(user);
         return new AuthTokens(newAccess, newRefresh);
