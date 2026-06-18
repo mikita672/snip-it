@@ -2,6 +2,7 @@
 
 import ProfileForm from "@/components/profile/ProfileForm";
 import ManagementTab from "@/components/management/ManagementTab";
+import StatisticsTab from "@/components/statistics/StatisticsTab";
 import AppointmentsTable from "@/components/appointments/AppointmentsTable";
 import { UserProfile } from "@/types/user/UserProfile";
 import { UserReservationsPage } from "@/types/reservation/UserReservationPreview";
@@ -102,7 +103,7 @@ export default function ProfilePage({ searchParams }: Props) {
       </div>
 
       <Tabs defaultValue={activeTab} className="w-full">
-        <TabsList className={`grid w-full bg-muted/50 ${user.isAdmin ? "md:w-[600px] grid-cols-3" : "md:w-[400px] grid-cols-2"}`}>
+        <TabsList className={`grid w-full bg-muted/50 ${user.isAdmin ? "md:w-[800px] grid-cols-4" : "md:w-[400px] grid-cols-2"}`}>
           <TabsTrigger value="profile" asChild>
             <Link href="/profile?tab=profile">Profile</Link>
           </TabsTrigger>
@@ -112,6 +113,11 @@ export default function ProfilePage({ searchParams }: Props) {
           {user.isAdmin && (
             <TabsTrigger value="management" asChild>
               <Link href="/profile?tab=management">Management</Link>
+            </TabsTrigger>
+          )}
+          {user.isAdmin && (
+            <TabsTrigger value="statistics" asChild>
+              <Link href="/profile?tab=statistics">Statistics</Link>
             </TabsTrigger>
           )}
         </TabsList>
@@ -145,6 +151,12 @@ export default function ProfilePage({ searchParams }: Props) {
         {user.isAdmin && (
           <TabsContent value="management" className="mt-6">
             <ManagementTab />
+          </TabsContent>
+        )}
+
+        {user.isAdmin && (
+          <TabsContent value="statistics" className="mt-6">
+            <StatisticsTab />
           </TabsContent>
         )}
       </Tabs>
