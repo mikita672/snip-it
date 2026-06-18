@@ -36,20 +36,20 @@ public class StatisticsService {
 
         Map<Integer, Long> countByMonth = new HashMap<>();
         Map<Integer, BigDecimal> incomeByMonth = new HashMap<>();
-        for (int m = 1; m <= 12; m++) {
-            countByMonth.put(m, 0L);
-            incomeByMonth.put(m, BigDecimal.ZERO);
+        for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+            countByMonth.put(monthIndex, 0L);
+            incomeByMonth.put(monthIndex, BigDecimal.ZERO);
         }
 
-        for (Reservation r : completed) {
-            int month = r.getReservationTime().getMonthValue();
+        for (Reservation reservation : completed) {
+            int month = reservation.getReservationTime().getMonthValue();
             countByMonth.merge(month, 1L, Long::sum);
-            incomeByMonth.merge(month, r.getTotalPrice(), BigDecimal::add);
+            incomeByMonth.merge(month, reservation.getTotalPrice(), BigDecimal::add);
         }
 
         List<MonthlyStatDTO> monthlyStats = new ArrayList<>();
-        for (int m = 1; m <= 12; m++) {
-            monthlyStats.add(new MonthlyStatDTO(m, countByMonth.get(m), incomeByMonth.get(m)));
+        for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+            monthlyStats.add(new MonthlyStatDTO(monthIndex, countByMonth.get(monthIndex), incomeByMonth.get(monthIndex)));
         }
 
         BigDecimal totalIncome = incomeByMonth.values().stream()
@@ -61,7 +61,7 @@ public class StatisticsService {
         if (totalAppointments == 0) {
             averageMonthlyIncome = BigDecimal.ZERO;
         } else {
-            long monthsWithData = countByMonth.values().stream().filter(c -> c > 0).count();
+            long monthsWithData = countByMonth.values().stream().filter(count -> count > 0).count();
             if (monthsWithData == 0) {
                 averageMonthlyIncome = BigDecimal.ZERO;
             } else {
@@ -89,39 +89,39 @@ public class StatisticsService {
         Map<Integer, Map<Integer, Long>> employeeMonthCount = new HashMap<>();
         Map<Integer, Map<Integer, BigDecimal>> employeeMonthIncome = new HashMap<>();
 
-        for (Reservation r : completed) {
-            int empId = r.getEmployee().getId();
-            String empName = r.getEmployee().getFirstName() + " " + r.getEmployee().getLastName();
-            employeeNames.put(empId, empName);
+        for (Reservation reservation : completed) {
+            int employeeId = reservation.getEmployee().getId();
+            String empName = reservation.getEmployee().getFirstName() + " " + reservation.getEmployee().getLastName();
+            employeeNames.put(employeeId, empName);
 
-            employeeMonthCount.computeIfAbsent(empId, k -> {
-                Map<Integer, Long> m = new HashMap<>();
-                for (int i = 1; i <= 12; i++) {
-                    m.put(i, 0L);
+            employeeMonthCount.computeIfAbsent(employeeId, key -> {
+                Map<Integer, Long> monthMap = new HashMap<>();
+                for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+                    monthMap.put(monthIndex, 0L);
                 }
-                return m;
+                return monthMap;
             });
-            employeeMonthIncome.computeIfAbsent(empId, k -> {
-                Map<Integer, BigDecimal> m = new HashMap<>();
-                for (int i = 1; i <= 12; i++) {
-                    m.put(i, BigDecimal.ZERO);
+            employeeMonthIncome.computeIfAbsent(employeeId, key -> {
+                Map<Integer, BigDecimal> monthMap = new HashMap<>();
+                for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+                    monthMap.put(monthIndex, BigDecimal.ZERO);
                 }
-                return m;
+                return monthMap;
             });
 
-            int month = r.getReservationTime().getMonthValue();
-            employeeMonthCount.get(empId).merge(month, 1L, Long::sum);
-            employeeMonthIncome.get(empId).merge(month, r.getTotalPrice(), BigDecimal::add);
+            int month = reservation.getReservationTime().getMonthValue();
+            employeeMonthCount.get(employeeId).merge(month, 1L, Long::sum);
+            employeeMonthIncome.get(employeeId).merge(month, reservation.getTotalPrice(), BigDecimal::add);
         }
 
         List<EmployeeStatsDTO> result = new ArrayList<>();
-        for (int empId : employeeNames.keySet()) {
-            Map<Integer, Long> monthCount = employeeMonthCount.get(empId);
-            Map<Integer, BigDecimal> monthIncome = employeeMonthIncome.get(empId);
+        for (int employeeId : employeeNames.keySet()) {
+            Map<Integer, Long> monthCount = employeeMonthCount.get(employeeId);
+            Map<Integer, BigDecimal> monthIncome = employeeMonthIncome.get(employeeId);
 
             List<MonthlyStatDTO> monthlyStats = new ArrayList<>();
-            for (int m = 1; m <= 12; m++) {
-                monthlyStats.add(new MonthlyStatDTO(m, monthCount.get(m), monthIncome.get(m)));
+            for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+                monthlyStats.add(new MonthlyStatDTO(monthIndex, monthCount.get(monthIndex), monthIncome.get(monthIndex)));
             }
 
             BigDecimal totalIncome = monthIncome.values().stream()
@@ -129,7 +129,7 @@ public class StatisticsService {
             long totalAppointments = monthCount.values().stream()
                     .mapToLong(Long::longValue).sum();
 
-            long monthsWithData = monthCount.values().stream().filter(c -> c > 0).count();
+            long monthsWithData = monthCount.values().stream().filter(count -> count > 0).count();
             BigDecimal avgMonthlyIncome;
             if (monthsWithData == 0) {
                 avgMonthlyIncome = BigDecimal.ZERO;
@@ -139,8 +139,8 @@ public class StatisticsService {
             }
 
             result.add(new EmployeeStatsDTO(
-                    empId,
-                    employeeNames.get(empId),
+                    employeeId,
+                    employeeNames.get(employeeId),
                     avgMonthlyIncome,
                     totalAppointments,
                     totalIncome,
@@ -161,42 +161,41 @@ public class StatisticsService {
         Map<Integer, Map<Integer, Long>> treatmentMonthCount = new HashMap<>();
         Map<Integer, Map<Integer, BigDecimal>> treatmentMonthIncome = new HashMap<>();
 
-        for (Reservation r : completed) {
-            int month = r.getReservationTime().getMonthValue();
-            int treatmentCount = r.getTreatments().size();
+        for (Reservation reservation : completed) {
+            int month = reservation.getReservationTime().getMonthValue();
 
-            for (Treatment t : r.getTreatments()) {
-                int tId = t.getId();
-                treatmentNames.put(tId, t.getName());
+            for (Treatment treatment : reservation.getTreatments()) {
+                int treatmentId = treatment.getId();
+                treatmentNames.put(treatmentId, treatment.getName());
 
-                treatmentMonthCount.computeIfAbsent(tId, k -> {
-                    Map<Integer, Long> m = new HashMap<>();
-                    for (int i = 1; i <= 12; i++) {
-                        m.put(i, 0L);
+                treatmentMonthCount.computeIfAbsent(treatmentId, key -> {
+                    Map<Integer, Long> monthMap = new HashMap<>();
+                    for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+                        monthMap.put(monthIndex, 0L);
                     }
-                    return m;
+                    return monthMap;
                 });
-                treatmentMonthIncome.computeIfAbsent(tId, k -> {
-                    Map<Integer, BigDecimal> m = new HashMap<>();
-                    for (int i = 1; i <= 12; i++) {
-                        m.put(i, BigDecimal.ZERO);
+                treatmentMonthIncome.computeIfAbsent(treatmentId, key -> {
+                    Map<Integer, BigDecimal> monthMap = new HashMap<>();
+                    for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+                        monthMap.put(monthIndex, BigDecimal.ZERO);
                     }
-                    return m;
+                    return monthMap;
                 });
 
-                treatmentMonthCount.get(tId).merge(month, 1L, Long::sum);
-                treatmentMonthIncome.get(tId).merge(month, t.getPrice(), BigDecimal::add);
+                treatmentMonthCount.get(treatmentId).merge(month, 1L, Long::sum);
+                treatmentMonthIncome.get(treatmentId).merge(month, treatment.getPrice(), BigDecimal::add);
             }
         }
 
         List<TreatmentStatsDTO> result = new ArrayList<>();
-        for (int tId : treatmentNames.keySet()) {
-            Map<Integer, Long> monthCount = treatmentMonthCount.get(tId);
-            Map<Integer, BigDecimal> monthIncome = treatmentMonthIncome.get(tId);
+        for (int treatmentId : treatmentNames.keySet()) {
+            Map<Integer, Long> monthCount = treatmentMonthCount.get(treatmentId);
+            Map<Integer, BigDecimal> monthIncome = treatmentMonthIncome.get(treatmentId);
 
             List<MonthlyStatDTO> monthlyStats = new ArrayList<>();
-            for (int m = 1; m <= 12; m++) {
-                monthlyStats.add(new MonthlyStatDTO(m, monthCount.get(m), monthIncome.get(m)));
+            for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+                monthlyStats.add(new MonthlyStatDTO(monthIndex, monthCount.get(monthIndex), monthIncome.get(monthIndex)));
             }
 
             long totalAppointments = monthCount.values().stream()
@@ -205,8 +204,8 @@ public class StatisticsService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             result.add(new TreatmentStatsDTO(
-                    tId,
-                    treatmentNames.get(tId),
+                    treatmentId,
+                    treatmentNames.get(treatmentId),
                     totalAppointments,
                     totalIncome,
                     monthlyStats
@@ -238,8 +237,8 @@ public class StatisticsService {
         List<Reservation> allCompleted = reservationRepository.findAll(spec);
 
         TreeSet<Integer> years = new TreeSet<>();
-        for (Reservation r : allCompleted) {
-            years.add(r.getReservationTime().getYear());
+        for (Reservation reservation : allCompleted) {
+            years.add(reservation.getReservationTime().getYear());
         }
 
         if (years.isEmpty()) {

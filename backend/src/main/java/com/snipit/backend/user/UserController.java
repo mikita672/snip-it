@@ -1,9 +1,11 @@
 package com.snipit.backend.user;
 
+import com.snipit.backend.user.dto.ChangePasswordRequestDTO;
 import com.snipit.backend.user.dto.UpdateProfileRequestDTO;
 import com.snipit.backend.user.dto.UserProfileDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,5 +42,16 @@ public class UserController {
                 saved.getLastName(),
                 saved.getPhone(),
                 saved.getIsAdmin());
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal User user,
+            @RequestBody @Valid ChangePasswordRequestDTO dto) {
+        if (!dto.newPassword().equals(dto.confirmNewPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+        userService.changePassword(user, dto.currentPassword(), dto.newPassword());
+        return ResponseEntity.noContent().build();
     }
 }

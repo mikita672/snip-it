@@ -39,7 +39,7 @@ export default function EmployeeTable() {
         setLoading(true)
         try {
             const res = await fetch('/api/employee')
-            if (!res.ok) return
+            if (!res.ok) {return}
             const data: Employee[] = await res.json()
             setEmployees(data)
         } finally {
@@ -52,10 +52,10 @@ export default function EmployeeTable() {
         let page = 1
         while (true) {
             const res = await fetch(`/api/treatment?pageNumber=${page}&sortBy=PRICE`)
-            if (!res.ok) break
+            if (!res.ok) {break}
             const data: { treatments: TreatmentPreview[]; totalPages: number } = await res.json()
             all.push(...data.treatments)
-            if (page >= data.totalPages) break
+            if (page >= data.totalPages) {break}
             page++
         }
         setAvailableTreatments(all)
@@ -209,7 +209,7 @@ export default function EmployeeTable() {
             {modalOpen && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    onClick={e => { if (e.target === e.currentTarget) closeModal() }}
+                    onClick={e => { if (e.target === e.currentTarget) {closeModal()} }}
                 >
                     <div className="bg-popover rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl ring-1 ring-foreground/10 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-lg font-semibold">

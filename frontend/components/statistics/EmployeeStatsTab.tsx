@@ -1,22 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-} from "recharts";
 import { EmployeeStats } from "@/types/statistics/Statistics";
 import { Input } from "@/components/ui/input";
-
-const MONTH_LABELS = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+import MonthlyBarChart from "@/components/statistics/MonthlyBarChart";
+import ChartModeToggle from "@/components/statistics/ChartModeToggle";
+import YearSelector from "@/components/statistics/YearSelector";
+import SortButton from "@/components/statistics/SortButton";
 
 type ChartMode = "appointments" | "income";
 type SortDir = "desc" | "asc";
@@ -80,15 +70,14 @@ export default function EmployeeStatsTab({
         return employees.find((e) => e.employeeId === selectedId) || null;
     }, [employees, selectedId]);
 
-    const chartData = useMemo(() => {
-        if (!selectedEmployee) {
-            return [];
-        }
-        return selectedEmployee.monthlyStats.map((s) => ({
-            name: MONTH_LABELS[s.month - 1],
-            value: chartMode === "appointments" ? s.appointments : s.income,
-        }));
-    }, [selectedEmployee, chartMode]);
+    const toggleSort = () => {
+        setSortDir((d) => {
+            if (d === "desc") {
+                return "asc";
+            }
+            return "desc";
+        });
+    };
 
     if (loading) {
         return (
@@ -102,39 +91,25 @@ export default function EmployeeStatsTab({
         <div className="flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
                 <h3 className="text-lg font-semibold">Employee Performance</h3>
-                <div className="flex items-center gap-3">
-                    <select
-                        value={year}
-                        onChange={(e) => onYearChange(Number(e.target.value))}
-                        className="border rounded-lg px-3 py-1.5 text-sm bg-background"
-                    >
-                        {availableYears.map((y) => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
-                    </select>
-                </div>
+                <YearSelector
+                    year={year}
+                    availableYears={availableYears}
+                    onYearChange={onYearChange}
+                />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full justify-between">
                 <Input
                     placeholder="Search employees..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="max-w-sm"
+                    className="flex-1 border border-border"
                 />
-                <button
-                    onClick={() =>
-                        setSortDir((d) => {
-                            if (d === "desc") {
-                                return "asc";
-                            }
-                            return "desc";
-                        })
-                    }
-                    className="border rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors whitespace-nowrap"
-                >
-                    Avg. income {sortDir === "desc" ? "↓" : "↑"}
-                </button>
+                <SortButton
+                    label="Avg. income"
+                    sortDir={sortDir}
+                    onToggle={toggleSort}
+                />
             </div>
 
             {filtered.length === 0 ? (
@@ -142,7 +117,7 @@ export default function EmployeeStatsTab({
                     No employees with completed appointments in {year}.
                 </p>
             ) : (
-                <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto border rounded-xl p-2">
+                <div className="flex flex-col gap-2 border rounded-xl p-2">
                     {filtered.map((emp) => {
                         const isSelected = selectedId === emp.employeeId;
                         return (
@@ -190,76 +165,13 @@ export default function EmployeeStatsTab({
                         <h4 className="font-medium">
                             {selectedEmployee.employeeName}
                         </h4>
-                        <div className="flex rounded-lg border overflow-hidden">
-                            <button
-                                onClick={() => setChartMode("income")}
-                                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                                    chartMode === "income"
-                                        ? "bg-primary text-primary-foreground"
-                                        : "hover:bg-muted text-muted-foreground"
-                                }`}
-                            >
-                                Income
-                            </button>
-                            <button
-                                onClick={() => setChartMode("appointments")}
-                                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                                    chartMode === "appointments"
-                                        ? "bg-primary text-primary-foreground"
-                                        : "hover:bg-muted text-muted-foreground"
-                                }`}
-                            >
-                                Appointments
-                            </button>
-                        </div>
+                        <ChartModeToggle mode={chartMode} onModeChange={setChartMode} />
                     </div>
-
-                    <div className="w-full h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
-                                <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    stroke="var(--border)"
-                                />
-                                <XAxis
-                                    dataKey="name"
-                                    tick={{
-                                        fontSize: 12,
-                                        fill: "var(--muted-foreground)",
-                                    }}
-                                />
-                                <YAxis
-                                    tick={{
-                                        fontSize: 12,
-                                        fill: "var(--muted-foreground)",
-                                    }}
-                                    allowDecimals={chartMode === "income"}
-                                />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: "var(--popover)",
-                                        border: "1px solid var(--border)",
-                                        borderRadius: "8px",
-                                        color: "var(--foreground)",
-                                    }}
-                                    formatter={(value) => {
-                                        if (chartMode === "income") {
-                                            return [
-                                                `$${Number(value).toFixed(2)}`,
-                                                "Income",
-                                            ];
-                                        }
-                                        return [String(value), "Appointments"];
-                                    }}
-                                />
-                                <Bar
-                                    dataKey="value"
-                                    fill="var(--chart-2)"
-                                    radius={[4, 4, 0, 0]}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                    <MonthlyBarChart
+                        monthlyStats={selectedEmployee.monthlyStats}
+                        mode={chartMode}
+                        height={300}
+                    />
                 </div>
             )}
         </div>

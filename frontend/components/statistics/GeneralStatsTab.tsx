@@ -1,21 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-} from "recharts";
 import { GeneralStats } from "@/types/statistics/Statistics";
-
-const MONTH_LABELS = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+import MonthlyBarChart from "@/components/statistics/MonthlyBarChart";
+import ChartModeToggle from "@/components/statistics/ChartModeToggle";
+import YearSelector from "@/components/statistics/YearSelector";
 
 type ChartMode = "appointments" | "income";
 
@@ -61,84 +50,21 @@ export default function GeneralStatsTab() {
         );
     }
 
-    const chartData = stats.monthlyStats.map((s) => ({
-        name: MONTH_LABELS[s.month - 1],
-        value: mode === "appointments" ? s.appointments : s.income,
-    }));
-
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
                 <h3 className="text-lg font-semibold">General Overview</h3>
                 <div className="flex items-center gap-3">
-                    <select
-                        value={year}
-                        onChange={(e) => setYear(Number(e.target.value))}
-                        className="border rounded-lg px-3 py-1.5 text-sm bg-background"
-                    >
-                        {stats.availableYears.map((y) => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
-                    </select>
-                    <div className="flex rounded-lg border overflow-hidden">
-                        <button
-                            onClick={() => setMode("appointments")}
-                            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                                mode === "appointments"
-                                    ? "bg-primary text-primary-foreground"
-                                    : "hover:bg-muted text-muted-foreground"
-                            }`}
-                        >
-                            Appointments
-                        </button>
-                        <button
-                            onClick={() => setMode("income")}
-                            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                                mode === "income"
-                                    ? "bg-primary text-primary-foreground"
-                                    : "hover:bg-muted text-muted-foreground"
-                            }`}
-                        >
-                            Income
-                        </button>
-                    </div>
+                    <YearSelector
+                        year={year}
+                        availableYears={stats.availableYears}
+                        onYearChange={setYear}
+                    />
+                    <ChartModeToggle mode={mode} onModeChange={setMode} />
                 </div>
             </div>
 
-            <div className="w-full h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                        />
-                        <YAxis
-                            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                            allowDecimals={mode === "income"}
-                        />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: "var(--popover)",
-                                border: "1px solid var(--border)",
-                                borderRadius: "8px",
-                                color: "var(--foreground)",
-                            }}
-                            formatter={(value) => {
-                                if (mode === "income") {
-                                    return [`$${Number(value).toFixed(2)}`, "Income"];
-                                }
-                                return [String(value), "Appointments"];
-                            }}
-                        />
-                        <Bar
-                            dataKey="value"
-                            fill="var(--chart-1)"
-                            radius={[4, 4, 0, 0]}
-                        />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+            <MonthlyBarChart monthlyStats={stats.monthlyStats} mode={mode} />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="border rounded-xl p-4 flex flex-col gap-1">

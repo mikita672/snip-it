@@ -142,43 +142,127 @@ public class DataSeeder {
                 admin.setIsAdmin(true);
                 admin.setPasswordHash(passwordEncoder.encode("admin"));
                 userRepository.save(admin);
+            }
 
-                String[] statuses = { "Pending", "Confirmed", "Cancelled", "Completed" };
-                List<Employee> allEmployees = List.of(e1, e2, e3, e4);
-                List<Treatment> allTreatments = List.of(t1, t2, t3, t4, t5, t6, t7, t8);
+            
+            if (reservationRepository.count() < 100) {
+                reservationRepository.deleteAll();
+
+                List<Employee> allEmployees = employeeRepository.findAll();
+                List<User> allUsers = userRepository.findAll();
+                if (allUsers.isEmpty() || allEmployees.isEmpty()) { return; }
+
+                User clientUser = allUsers.stream()
+                        .filter(u -> !u.getIsAdmin())
+                        .findFirst()
+                        .orElse(allUsers.get(0));
+
                 java.util.Random random = new java.util.Random();
+                LocalDateTime startPeriod = LocalDateTime.of(2025, 10, 1, 0, 0);
+                LocalDateTime endPeriod = LocalDateTime.now();
 
-                for (int i = 0; i < 40; i++) {
-                    Reservation r = new Reservation();
-                    r.setUser(user);
+                LocalDateTime currentMonth = startPeriod;
+                while (currentMonth.isBefore(endPeriod) || currentMonth.getMonth() == endPeriod.getMonth() && currentMonth.getYear() == endPeriod.getYear()) {
+                    int appointmentsThisMonth = 40 + random.nextInt(20); 
 
+                    for (int i = 0; i < appointmentsThisMonth; i++) {
+                        Employee randomEmployee = allEmployees.get(random.nextInt(allEmployees.size()));
+                        List<Treatment> employeeTreatments = randomEmployee.getTreatments();
+                        
+                        if (employeeTreatments == null || employeeTreatments.isEmpty()) { continue; }
+
+                        int maxDays = currentMonth.toLocalDate().lengthOfMonth();
+                        int randomDay = 1 + random.nextInt(maxDays);
+                        
+                        
+                        LocalDateTime randomTime = currentMonth.withDayOfMonth(randomDay)
+                                .withHour(10 + random.nextInt(6))
+                                .withMinute(random.nextBoolean() ? 0 : 30)
+                                .withSecond(0).withNano(0);
+
+                        
+                        if (randomTime.isAfter(LocalDateTime.now())) {
+                            continue;
+                        }
+
+                        
+                        int dayOfWeek = randomTime.getDayOfWeek().getValue();
+                        if (dayOfWeek > 5) {
+                            randomTime = randomTime.minusDays(dayOfWeek - 5);
+                        }
+
+                        Reservation reservation = new Reservation();
+                        reservation.setUser(clientUser);
+                        reservation.setEmployee(randomEmployee);
+                        reservation.setReservationTime(randomTime);
+                        reservation.setStatus(random.nextInt(10) > 1 ? "Completed" : "Cancelled"); 
+
+                        int treatmentCount = 1 + random.nextInt(2);
+                        Set<Treatment> selectedTreatments = new java.util.HashSet<>();
+                        int duration = 0;
+                        BigDecimal totalPrice = BigDecimal.ZERO;
+
+                        for (int j = 0; j < treatmentCount; j++) {
+                            Treatment rt = employeeTreatments.get(random.nextInt(employeeTreatments.size()));
+                            selectedTreatments.add(rt);
+                        }
+
+                        for (Treatment rt : selectedTreatments) {
+                            duration += rt.getDurationMinutes();
+                            totalPrice = totalPrice.add(rt.getPrice());
+                        }
+
+                        reservation.setTreatments(selectedTreatments);
+                        reservation.setSumDuration(duration);
+                        reservation.setTotalPrice(totalPrice);
+
+                        reservationRepository.save(reservation);
+                    }
+                    currentMonth = currentMonth.plusMonths(1);
+                }
+
+                for (int i = 0; i < 15; i++) {
                     Employee randomEmployee = allEmployees.get(random.nextInt(allEmployees.size()));
-                    r.setEmployee(randomEmployee);
+                    List<Treatment> employeeTreatments = randomEmployee.getTreatments();
+                    if (employeeTreatments == null || employeeTreatments.isEmpty()) { continue; }
 
                     LocalDateTime randomTime = LocalDateTime.now()
-                            .plusDays(random.nextInt(61) - 30)
-                            .withHour(9 + random.nextInt(8))
+                            .plusDays(random.nextInt(11) - 3)
+                            .withHour(10 + random.nextInt(6))
                             .withMinute(random.nextBoolean() ? 0 : 30)
                             .withSecond(0).withNano(0);
-                    r.setReservationTime(randomTime);
 
-                    r.setStatus(statuses[random.nextInt(statuses.length)]);
+                    int dayOfWeek = randomTime.getDayOfWeek().getValue();
+                    if (dayOfWeek > 5) {
+                        randomTime = randomTime.minusDays(dayOfWeek - 5);
+                    }
+
+                    Reservation reservation = new Reservation();
+                    reservation.setUser(clientUser);
+                    reservation.setEmployee(randomEmployee);
+                    reservation.setReservationTime(randomTime);
+                    reservation.setStatus(random.nextBoolean() ? "Pending" : "Confirmed");
 
                     int treatmentCount = 1 + random.nextInt(2);
                     Set<Treatment> selectedTreatments = new java.util.HashSet<>();
                     int duration = 0;
-                    java.math.BigDecimal totalPrice = java.math.BigDecimal.ZERO;
+                    BigDecimal totalPrice = BigDecimal.ZERO;
+
                     for (int j = 0; j < treatmentCount; j++) {
-                        Treatment rt = allTreatments.get(random.nextInt(allTreatments.size()));
+                        Treatment rt = employeeTreatments.get(random.nextInt(employeeTreatments.size()));
                         selectedTreatments.add(rt);
+                    }
+
+                    for (Treatment rt : selectedTreatments) {
                         duration += rt.getDurationMinutes();
                         totalPrice = totalPrice.add(rt.getPrice());
                     }
-                    r.setTreatments(selectedTreatments);
-                    r.setSumDuration(duration);
-                    r.setTotalPrice(totalPrice);
 
-                    reservationRepository.save(r);
+                    reservation.setTreatments(selectedTreatments);
+                    reservation.setSumDuration(duration);
+                    reservation.setTotalPrice(totalPrice);
+
+                    reservationRepository.save(reservation);
                 }
             }
         };
