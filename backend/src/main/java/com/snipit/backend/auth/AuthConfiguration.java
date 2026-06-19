@@ -10,23 +10,21 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.userdetails.User;
 
 import com.snipit.backend.user.UserRepository;
 
 @Configuration
 public class AuthConfiguration {
-	private final UserRepository userRepository;
+	private final UserRepository repository;
 
 	public AuthConfiguration(UserRepository repository) {
-		this.userRepository = repository;
+		this.repository = repository;
 	}
 
 	@Bean
 	public UserDetailsService userDetailsService() {
-		return username -> userRepository.findByEmail(username)
-				.map(user -> User
-						.builder()
+		return username -> repository.findByEmail(username)
+				.map(user -> org.springframework.security.core.userdetails.User.builder()
 						.username(user.getEmail())
 						.password(user.getPasswordHash())
 						.roles(user.getIsAdmin() ? "ADMIN" : "USER")
