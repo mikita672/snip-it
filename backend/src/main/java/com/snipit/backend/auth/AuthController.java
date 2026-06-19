@@ -1,7 +1,5 @@
 package com.snipit.backend.auth;
 
-import java.util.Map;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -34,7 +32,7 @@ public class AuthController {
                         return withAuthCookies(tokens, ResponseEntity.noContent());
                 } catch (EmailAlreadyExistsException e) {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
-                                        .body(Map.of("error", e.getMessage()));
+                                        .body(java.util.Map.of("error", e.getMessage()));
                 }
         }
 
