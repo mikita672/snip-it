@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ReservationsFilters } from './ReservationsFilters'
 import { ReservationsTableContent } from './ReservationsTableContent'
 import { ReservationsPagination } from './ReservationsPagination'
+import { toast } from 'sonner'
 import type { AdminReservationPreview } from '@/types/reservation/AdminReservationPreview'
 import type { AdminReservationsPage } from '@/types/reservation/AdminReservationsPage'
 
@@ -97,7 +98,12 @@ export default function ReservationsTable() {
                         ),
                     }
                 })
+                toast.success('Reservation status updated')
+            } else {
+                toast.error('Failed to update status')
             }
+        } catch {
+            toast.error('Failed to update status')
         } finally {
             setUpdatingId(null)
         }
