@@ -2,8 +2,8 @@
 
 import { Bodoni_Moda } from "next/font/google";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -21,9 +21,16 @@ const tabs = [
 
 export default function ProfileLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, loading, error } = useAuth();
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user && !error) {
+      router.replace("/login");
+    }
+  }, [loading, user, error, router]);
+
+  if (loading || (!user && !error)) {
     return (
       <div className="flex flex-col gap-6 px-[4%] py-6 md:py-12">
         <p className="text-center text-muted-foreground">Loading profile...</p>

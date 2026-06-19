@@ -51,9 +51,13 @@ public class ReservationDTOMapper {
     }
 
     public Reservation toEntity(ReservationRequestDTO dto) {
+        ReservationStatus status = ReservationStatus.Pending;
+        if (dto.status() != null) {
+            status = ReservationStatus.valueOf(dto.status().toLowerCase().substring(0, 1).toUpperCase() + dto.status().toLowerCase().substring(1));
+        }
         return Reservation.builder()
                 .reservationTime(dto.reservationTime())
-                .status(ReservationStatus.valueOf(dto.status().toLowerCase()))
+                .status(status)
                 .build();
     }
 }

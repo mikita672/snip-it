@@ -77,7 +77,7 @@ public class ReservationService {
         }
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
-        ReservationStatus filterStatus = ReservationStatus.Pending;
+        ReservationStatus filterStatus = null;
         if (status != null && !status.isEmpty()) {
             if (status.equalsIgnoreCase("all")) {
                 filterStatus = null;
@@ -164,7 +164,7 @@ public class ReservationService {
         }
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
-        ReservationStatus filterStatus = ReservationStatus.Pending;
+        ReservationStatus filterStatus = null;
         if (status != null && !status.isEmpty()) {
             if (status.equalsIgnoreCase("all")) {
                 filterStatus = null;

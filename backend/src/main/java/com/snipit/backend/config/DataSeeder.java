@@ -138,6 +138,27 @@ public class DataSeeder {
                 user.setPasswordHash(passwordEncoder.encode("password"));
                 userRepository.save(user);
 
+                User u1 = new User();
+                u1.setEmail("alice@example.com");
+                u1.setFirstName("Alice");
+                u1.setLastName("Smith");
+                u1.setPasswordHash(passwordEncoder.encode("password"));
+                userRepository.save(u1);
+
+                User u2 = new User();
+                u2.setEmail("bob@example.com");
+                u2.setFirstName("Bob");
+                u2.setLastName("Johnson");
+                u2.setPasswordHash(passwordEncoder.encode("password"));
+                userRepository.save(u2);
+
+                User u3 = new User();
+                u3.setEmail("charlie@example.com");
+                u3.setFirstName("Charlie");
+                u3.setLastName("Brown");
+                u3.setPasswordHash(passwordEncoder.encode("password"));
+                userRepository.save(u3);
+
                 User admin = new User();
                 admin.setEmail("admin@admin.com");
                 admin.setFirstName("Demo");
@@ -158,9 +179,13 @@ public class DataSeeder {
                 }
 
                 User clientUser = allUsers.stream()
-                        .filter(u -> !u.getIsAdmin())
+                        .filter(u -> !u.getIsAdmin() && u.getEmail().equals("client@example.com"))
                         .findFirst()
                         .orElse(allUsers.get(0));
+
+                List<User> otherUsers = allUsers.stream()
+                        .filter(u -> !u.getIsAdmin() && !u.getEmail().equals("client@example.com"))
+                        .toList();
 
                 Random random = new Random();
                 LocalDateTime startPeriod = LocalDateTime.of(2025, 10, 1, 0, 0);
@@ -182,9 +207,13 @@ public class DataSeeder {
                         int randomDay = 1 + random.nextInt(maxDays);
                         
                         
+                        int minute = 30;
+                        if (random.nextBoolean()) {
+                            minute = 0;
+                        }
                         LocalDateTime randomTime = currentMonth.withDayOfMonth(randomDay)
                                 .withHour(10 + random.nextInt(6))
-                                .withMinute(random.nextBoolean() ? 0 : 30)
+                                .withMinute(minute)
                                 .withSecond(0).withNano(0);
 
                         
@@ -202,7 +231,11 @@ public class DataSeeder {
                         reservation.setUser(clientUser);
                         reservation.setEmployee(randomEmployee);
                         reservation.setReservationTime(randomTime);
-                        reservation.setStatus(random.nextInt(10) > 1 ? ReservationStatus.Completed : ReservationStatus.Cancelled); 
+                        if (random.nextInt(10) > 1) {
+                            reservation.setStatus(ReservationStatus.Completed);
+                        } else {
+                            reservation.setStatus(ReservationStatus.Cancelled);
+                        }
 
                         int treatmentCount = 1 + random.nextInt(2);
                         Set<Treatment> selectedTreatments = new HashSet<>();
@@ -235,10 +268,14 @@ public class DataSeeder {
                         continue;
                     }
 
+                    int minute = 30;
+                    if (random.nextBoolean()) {
+                        minute = 0;
+                    }
                     LocalDateTime randomTime = LocalDateTime.now()
                             .plusDays(random.nextInt(11) - 3)
                             .withHour(10 + random.nextInt(6))
-                            .withMinute(random.nextBoolean() ? 0 : 30)
+                            .withMinute(minute)
                             .withSecond(0).withNano(0);
 
                     int dayOfWeek = randomTime.getDayOfWeek().getValue();
@@ -250,7 +287,11 @@ public class DataSeeder {
                     reservation.setUser(clientUser);
                     reservation.setEmployee(randomEmployee);
                     reservation.setReservationTime(randomTime);
-                    reservation.setStatus(random.nextBoolean() ? ReservationStatus.Pending : ReservationStatus.Confirmed);
+                    if (random.nextBoolean()) {
+                        reservation.setStatus(ReservationStatus.Completed);
+                    } else {
+                        reservation.setStatus(ReservationStatus.Cancelled);
+                    }
 
                     int treatmentCount = 1 + random.nextInt(2);
                     Set<Treatment> selectedTreatments = new HashSet<>();
@@ -272,6 +313,67 @@ public class DataSeeder {
                     reservation.setTotalPrice(totalPrice);
 
                     reservationRepository.save(reservation);
+                }
+
+                for (User otherUser : otherUsers) {
+                    int pendingCount = 1 + random.nextInt(2);
+                    int cancelledCount = 1 + random.nextInt(3);
+                    int totalReservations = pendingCount + cancelledCount;
+
+                    for (int i = 0; i < totalReservations; i++) {
+                        Employee randomEmployee = allEmployees.get(random.nextInt(allEmployees.size()));
+                        List<Treatment> employeeTreatments = randomEmployee.getTreatments();
+                        if (employeeTreatments == null || employeeTreatments.isEmpty()) {
+                            continue;
+                        }
+
+                        int minute = 30;
+                        if (random.nextBoolean()) {
+                            minute = 0;
+                        }
+                        LocalDateTime randomTime = LocalDateTime.now()
+                                .plusDays(random.nextInt(11) - 3)
+                                .withHour(10 + random.nextInt(6))
+                                .withMinute(minute)
+                                .withSecond(0).withNano(0);
+
+                        int dayOfWeek = randomTime.getDayOfWeek().getValue();
+                        if (dayOfWeek > 5) {
+                            randomTime = randomTime.minusDays(dayOfWeek - 5);
+                        }
+
+                        Reservation reservation = new Reservation();
+                        reservation.setUser(otherUser);
+                        reservation.setEmployee(randomEmployee);
+                        reservation.setReservationTime(randomTime);
+
+                        if (i < pendingCount) {
+                            reservation.setStatus(ReservationStatus.Pending);
+                        } else {
+                            reservation.setStatus(ReservationStatus.Cancelled);
+                        }
+
+                        int treatmentCount = 1 + random.nextInt(2);
+                        Set<Treatment> selectedTreatments = new HashSet<>();
+                        int duration = 0;
+                        BigDecimal totalPrice = BigDecimal.ZERO;
+
+                        for (int j = 0; j < treatmentCount; j++) {
+                            Treatment rt = employeeTreatments.get(random.nextInt(employeeTreatments.size()));
+                            selectedTreatments.add(rt);
+                        }
+
+                        for (Treatment rt : selectedTreatments) {
+                            duration += rt.getDurationMinutes();
+                            totalPrice = totalPrice.add(rt.getPrice());
+                        }
+
+                        reservation.setTreatments(selectedTreatments);
+                        reservation.setSumDuration(duration);
+                        reservation.setTotalPrice(totalPrice);
+
+                        reservationRepository.save(reservation);
+                    }
                 }
             }
         };
