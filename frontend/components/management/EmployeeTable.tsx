@@ -6,9 +6,18 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import type { Employee } from '@/types/employee/Employee'
 import type { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
 import type { ScheduleEntry } from '@/types/employee/ScheduleEntry'
+
+const employeeSchema = z.object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    position: z.string().min(1, 'Position is required'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(1, 'Phone number is required'),
+})
 
 const DAYS = [
     { label: 'Mon', value: 1 },
@@ -72,8 +81,27 @@ export default function EmployeeTable() {
     const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
     const [isCreating, setIsCreating] = useState(false)
     const [form, setForm] = useState<EmployeeForm>(emptyForm)
+    const [formErrors, setFormErrors] = useState<{ firstName?: string; lastName?: string; position?: string; email?: string; phone?: string }>({})
     const [scheduleMap, setScheduleMap] = useState<ScheduleMap>(defaultScheduleMap)
     const [availableTreatments, setAvailableTreatments] = useState<TreatmentPreview[]>([])
+
+    const updateForm = (updates: Partial<EmployeeForm>) => {
+        const newForm = { ...form, ...updates }
+        setForm(newForm)
+        const result = employeeSchema.safeParse(newForm)
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors
+            setFormErrors({
+                firstName: errors.firstName?.[0],
+                lastName: errors.lastName?.[0],
+                position: errors.position?.[0],
+                email: errors.email?.[0],
+                phone: errors.phone?.[0],
+            })
+        } else {
+            setFormErrors({})
+        }
+    }
 
     const fetchEmployees = async () => {
         setLoading(true)
@@ -139,12 +167,26 @@ export default function EmployeeTable() {
     const closeModal = () => {
         setEditingEmployee(null)
         setIsCreating(false)
+        setFormErrors({})
     }
 
     const handleSave = async () => {
         const isEdit = editingEmployee !== null
         const url = isEdit ? `/api/employee/${editingEmployee.id}` : '/api/employee'
         const method = isEdit ? 'PUT' : 'POST'
+
+        const result = employeeSchema.safeParse(form)
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors
+            setFormErrors({
+                firstName: errors.firstName?.[0],
+                lastName: errors.lastName?.[0],
+                position: errors.position?.[0],
+                email: errors.email?.[0],
+                phone: errors.phone?.[0],
+            })
+            return
+        }
 
         try {
             const res = await fetch(url, {
@@ -283,42 +325,47 @@ export default function EmployeeTable() {
                                 First Name
                                 <Input
                                     value={form.firstName}
-                                    onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ firstName: e.target.value })}
+                                    className={`ring-1 ${formErrors.firstName ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.firstName && <span className="text-xs text-destructive">{formErrors.firstName}</span>}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Last Name
                                 <Input
                                     value={form.lastName}
-                                    onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ lastName: e.target.value })}
+                                    className={`ring-1 ${formErrors.lastName ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.lastName && <span className="text-xs text-destructive">{formErrors.lastName}</span>}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Position
                                 <Input
                                     value={form.position}
-                                    onChange={e => setForm(f => ({ ...f, position: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ position: e.target.value })}
+                                    className={`ring-1 ${formErrors.position ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.position && <span className="text-xs text-destructive">{formErrors.position}</span>}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Email
                                 <Input
                                     type="email"
                                     value={form.email}
-                                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ email: e.target.value })}
+                                    className={`ring-1 ${formErrors.email ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.email && <span className="text-xs text-destructive">{formErrors.email}</span>}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Phone
                                 <Input
                                     value={form.phone}
-                                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ phone: e.target.value })}
+                                    className={`ring-1 ${formErrors.phone ? 'ring-destructive' : 'ring-border'}`}
                                 />
+                                {formErrors.phone && <span className="text-xs text-destructive">{formErrors.phone}</span>}
                             </label>
 
                             {availableTreatments.length > 0 && (

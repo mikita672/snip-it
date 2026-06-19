@@ -11,6 +11,20 @@ import {
 } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { z } from 'zod'
+
+const treatmentSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    description: z.string(),
+    durationMinutes: z.string().refine(val => {
+        const n = Number(val);
+        return !isNaN(n) && n >= 1;
+    }, 'Duration must be at least 1 minute'),
+    price: z.string().refine(val => {
+        const n = Number(val);
+        return !isNaN(n) && n >= 0 && val !== '';
+    }, 'Price must be a valid non-negative number'),
+})
 
 interface Treatment {
     id: number
@@ -35,9 +49,26 @@ export default function TreatmentTable() {
     const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null)
     const [isCreating, setIsCreating] = useState(false)
     const [editForm, setEditForm] = useState({ name: '', description: '', durationMinutes: '', price: '' })
-    const [formErrors, setFormErrors] = useState<{ durationMinutes?: string; price?: string }>({})
+    const [formErrors, setFormErrors] = useState<{ name?: string; description?: string; durationMinutes?: string; price?: string }>({})
 
     const emptyForm = { name: '', description: '', durationMinutes: '', price: '' }
+
+    const updateForm = (updates: Partial<typeof editForm>) => {
+        const newForm = { ...editForm, ...updates }
+        setEditForm(newForm)
+        const result = treatmentSchema.safeParse(newForm)
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors
+            setFormErrors({
+                name: errors.name?.[0],
+                description: errors.description?.[0],
+                durationMinutes: errors.durationMinutes?.[0],
+                price: errors.price?.[0],
+            })
+        } else {
+            setFormErrors({})
+        }
+    }
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -116,11 +147,20 @@ export default function TreatmentTable() {
     }
 
     const handleSave = async () => {
-        const errors: { durationMinutes?: string; price?: string } = {}
-        if (Number(editForm.durationMinutes) < 1) errors.durationMinutes = 'Duration must be at least 1 minute'
-        if (Number(editForm.price) < 0) errors.price = 'Price cannot be negative'
-        if (Object.keys(errors).length > 0) { setFormErrors(errors); return }
+        const result = treatmentSchema.safeParse(editForm)
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors
+            setFormErrors({
+                name: errors.name?.[0],
+                description: errors.description?.[0],
+                durationMinutes: errors.durationMinutes?.[0],
+                price: errors.price?.[0],
+            })
+            return
+        }
 
+        const url = isCreating ? '/api/treatment' : `/api/treatment/${editingTreatment!.id}`
+        const method = isCreating ? 'POST' : 'PATCH'
         try {
             const res = await fetch(url, {
                 method,
@@ -302,19 +342,25 @@ export default function TreatmentTable() {
                                 Name
                                 <Input
                                     value={editForm.name}
-                                    onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ name: e.target.value })}
+                                    className={`ring-1 ${formErrors.name ? 'ring-destructive' : 'ring-border'}`}
                                     placeholder="e.g. Haircut"
                                 />
+                                {formErrors.name && (
+                                    <span className="text-xs text-destructive">{formErrors.name}</span>
+                                )}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Description
                                 <Input
                                     value={editForm.description}
-                                    onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
-                                    className="ring-1 ring-border"
+                                    onChange={e => updateForm({ description: e.target.value })}
+                                    className={`ring-1 ${formErrors.description ? 'ring-destructive' : 'ring-border'}`}
                                     placeholder="Short description (optional)"
                                 />
+                                {formErrors.description && (
+                                    <span className="text-xs text-destructive">{formErrors.description}</span>
+                                )}
                             </label>
                             <label className="flex flex-col gap-1 text-sm font-medium">
                                 Duration (min)
@@ -323,10 +369,7 @@ export default function TreatmentTable() {
                                     min={1}
                                     value={editForm.durationMinutes}
                                     placeholder="30"
-                                    onChange={e => {
-                                        setEditForm(f => ({ ...f, durationMinutes: e.target.value }))
-                                        setFormErrors(err => ({ ...err, durationMinutes: undefined }))
-                                    }}
+                                    onChange={e => updateForm({ durationMinutes: e.target.value })}
                                     className={`ring-1 ${formErrors.durationMinutes ? 'ring-destructive' : 'ring-border'}`}
                                 />
                                 {formErrors.durationMinutes && (
@@ -341,10 +384,7 @@ export default function TreatmentTable() {
                                     min={0}
                                     value={editForm.price}
                                     placeholder="0.00"
-                                    onChange={e => {
-                                        setEditForm(f => ({ ...f, price: e.target.value }))
-                                        setFormErrors(err => ({ ...err, price: undefined }))
-                                    }}
+                                    onChange={e => updateForm({ price: e.target.value })}
                                     className={`ring-1 ${formErrors.price ? 'ring-destructive' : 'ring-border'}`}
                                 />
                                 {formErrors.price && (
