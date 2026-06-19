@@ -20,6 +20,8 @@ import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.Random;
+import java.util.HashSet;
 
 @Configuration
 public class DataSeeder {
@@ -151,14 +153,16 @@ public class DataSeeder {
 
                 List<Employee> allEmployees = employeeRepository.findAll();
                 List<User> allUsers = userRepository.findAll();
-                if (allUsers.isEmpty() || allEmployees.isEmpty()) { return; }
+                if (allUsers.isEmpty() || allEmployees.isEmpty()) {
+                    return;
+                }
 
                 User clientUser = allUsers.stream()
                         .filter(u -> !u.getIsAdmin())
                         .findFirst()
                         .orElse(allUsers.get(0));
 
-                java.util.Random random = new java.util.Random();
+                Random random = new Random();
                 LocalDateTime startPeriod = LocalDateTime.of(2025, 10, 1, 0, 0);
                 LocalDateTime endPeriod = LocalDateTime.now();
 
@@ -170,7 +174,9 @@ public class DataSeeder {
                         Employee randomEmployee = allEmployees.get(random.nextInt(allEmployees.size()));
                         List<Treatment> employeeTreatments = randomEmployee.getTreatments();
                         
-                        if (employeeTreatments == null || employeeTreatments.isEmpty()) { continue; }
+                        if (employeeTreatments == null || employeeTreatments.isEmpty()) {
+                            continue;
+                        }
 
                         int maxDays = currentMonth.toLocalDate().lengthOfMonth();
                         int randomDay = 1 + random.nextInt(maxDays);
@@ -199,7 +205,7 @@ public class DataSeeder {
                         reservation.setStatus(random.nextInt(10) > 1 ? ReservationStatus.Completed : ReservationStatus.Cancelled); 
 
                         int treatmentCount = 1 + random.nextInt(2);
-                        Set<Treatment> selectedTreatments = new java.util.HashSet<>();
+                        Set<Treatment> selectedTreatments = new HashSet<>();
                         int duration = 0;
                         BigDecimal totalPrice = BigDecimal.ZERO;
 
@@ -225,7 +231,9 @@ public class DataSeeder {
                 for (int i = 0; i < 15; i++) {
                     Employee randomEmployee = allEmployees.get(random.nextInt(allEmployees.size()));
                     List<Treatment> employeeTreatments = randomEmployee.getTreatments();
-                    if (employeeTreatments == null || employeeTreatments.isEmpty()) { continue; }
+                    if (employeeTreatments == null || employeeTreatments.isEmpty()) {
+                        continue;
+                    }
 
                     LocalDateTime randomTime = LocalDateTime.now()
                             .plusDays(random.nextInt(11) - 3)
@@ -245,7 +253,7 @@ public class DataSeeder {
                     reservation.setStatus(random.nextBoolean() ? ReservationStatus.Pending : ReservationStatus.Confirmed);
 
                     int treatmentCount = 1 + random.nextInt(2);
-                    Set<Treatment> selectedTreatments = new java.util.HashSet<>();
+                    Set<Treatment> selectedTreatments = new HashSet<>();
                     int duration = 0;
                     BigDecimal totalPrice = BigDecimal.ZERO;
 

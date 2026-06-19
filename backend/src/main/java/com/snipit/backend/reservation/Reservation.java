@@ -6,6 +6,7 @@ import com.snipit.backend.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,7 +42,7 @@ public class Reservation {
     private Integer sumDuration;
 
     @Column(name = "total_price", precision = 10, scale = 2)
-    private java.math.BigDecimal totalPrice;
+    private BigDecimal totalPrice;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
