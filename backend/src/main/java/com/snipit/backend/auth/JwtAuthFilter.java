@@ -62,8 +62,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = builder()
                     .username(user.getEmail())
-                    .password(user.getPasswordHash())
-                    .roles(user.getIsAdmin() ? "ADMIN" : "USER")
                     .build();
 
             try {
