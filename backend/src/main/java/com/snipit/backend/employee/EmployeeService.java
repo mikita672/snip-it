@@ -23,7 +23,9 @@ public class EmployeeService {
 
 	private void applySchedule(Employee employee, List<ScheduleEntryDTO> scheduleDTOs) {
 		employee.getSchedules().clear();
-		if (scheduleDTOs == null) return;
+		if (scheduleDTOs == null) {
+			return;
+		}
 		for (ScheduleEntryDTO dto : scheduleDTOs) {
 			EmployeeSchedule entry = new EmployeeSchedule();
 			entry.setEmployee(employee);
