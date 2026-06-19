@@ -18,5 +18,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 	List<Integer> findEmployeeIdsByAllTreatments(@Param("treatmentIds") List<Integer> treatmentIds, @Param("treatmentCount") long treatmentCount);
 
 	@EntityGraph(attributePaths = {"schedules"})
-	List<Employee> findWithSchedulesByIds(@Param("ids") List<Integer> ids);
+	List<Employee> findByIdIn(List<Integer> ids);
 }

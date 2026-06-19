@@ -43,8 +43,8 @@ public class AvailabilityService {
         int sumDuration = sumDuration(treatmentIds);
         int dayOfWeek = date.getDayOfWeek().getValue();
 
-        List<Employee> employees = employeeRepository.findWithSchedulesByIds(employeeIds)
-            stream().distinct().toList();
+        List<Employee> employees = employeeRepository.findByIdIn(employeeIds)
+            .stream().distinct().toList();
         Map<Integer, List<Reservation>> reservationsByEmployee = fetchReservationsByEmployee(employeeIds, date);
 
         Set<LocalTime> availableSlots = new TreeSet<>();
@@ -74,30 +74,29 @@ public class AvailabilityService {
                 .toList();
     }
 
-    public List<String> getAvailableDays(List<Integer> treatmentIds, LocalDate startDate, LocalDate endDate) {
+    public List<String> getAvailableDays(List<Integer> treatmentIds) {
         List<String> availableDays = new ArrayList<>();
-        LocalDate currentDate = startDate;
-        int maxDays = 30;
-        int count = 0;
-        while (!currentDate.isAfter(endDate) && count < maxDays) {
+        LocalDate currentDate = LocalDate.now();
+        for (int day = 0; day < 30; day++) {
             if (!getAvailableSlots(treatmentIds, currentDate).isEmpty()) {
                 availableDays.add(currentDate.toString());
             }
             currentDate = currentDate.plusDays(1);
-            count++;
         }
         return availableDays;
     }
 
     public List<AvailableEmployeeDTO> getAvailableEmployees(List<Integer> treatmentIds, LocalDateTime dateTime) {
         List<Integer> employeeIds = employeeRepository.findEmployeeIdsByAllTreatments(treatmentIds, treatmentIds.size());
-        if (employeeIds.isEmpty()) { return List.of(); }
+        if (employeeIds.isEmpty()) {
+            return List.of();
+        }
 
         int sumDuration = sumDuration(treatmentIds);
         int dayOfWeek = dateTime.getDayOfWeek().getValue();
         LocalTime requestedTime = dateTime.toLocalTime();
 
-        List<Employee> employees = employeeRepository.findWithSchedulesByIds(employeeIds);
+        List<Employee> employees = employeeRepository.findByIdIn(employeeIds);
         Map<Integer, List<Reservation>> reservationsByEmployee = fetchReservationsByEmployee(employeeIds, dateTime.toLocalDate());
 
         return employees.stream()
@@ -120,18 +119,11 @@ public class AvailabilityService {
                 .collect(Collectors.groupingBy(r -> r.getEmployee().getId()));
     }
 
-    private int getRoundedDuration(int durationMinutes) {
-        if (durationMinutes == 0) { return 0; }
-        int slots = (int) Math.ceil((double) durationMinutes / SLOT_INTERVAL_MINUTES);
-        return slots * SLOT_INTERVAL_MINUTES;
-    }
-
     private int sumDuration(List<Integer> treatmentIds) {
-        int exactDuration = treatmentRepository.findAllById(treatmentIds)
+        return treatmentRepository.findAllById(treatmentIds)
                 .stream()
                 .mapToInt(Treatment::getDurationMinutes)
                 .sum();
-        return getRoundedDuration(exactDuration);
     }
 
     private List<LocalTime> generateSlots(LocalTime start, LocalTime end, int durationMinutes) {
@@ -153,7 +145,7 @@ public class AvailabilityService {
                 .anyMatch(r -> {
                     int start2 = r.getReservationTime().toLocalTime().toSecondOfDay() / 60;
                     int rDuration = r.getSumDuration() != null ? r.getSumDuration() : 0;
-                    int end2 = start2 + getRoundedDuration(rDuration);
+                    int end2 = start2 + rDuration;
                     
                     return start1 < end2 && start2 < end1;
                 });

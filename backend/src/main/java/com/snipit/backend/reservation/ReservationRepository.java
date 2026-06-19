@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -18,9 +17,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 		   "AND r.reservationTime >= :startOfDay " +
 		   "AND r.reservationTime < :endOfDay")
 	List<Reservation> findByEmployeeIdsAndDate(
-			@Param("employeeIds") List<Integer> employeeIds,
-			@Param("startOfDay") LocalDateTime startOfDay,
-			@Param("endOfDay") LocalDateTime endOfDay
+			List<Integer> employeeIds,
+			LocalDateTime startOfDay,
+			LocalDateTime endOfDay
 	);
 
 	@Query("SELECT DISTINCT r FROM Reservation r " +
@@ -76,12 +75,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 		   "AND r.reservationTime >= :startOfDay " +
 		   "AND r.reservationTime < :endOfDay")
 	List<Reservation> findByStatusAndDate(
-			@Param("status") ReservationStatus status,
-			@Param("startOfDay") LocalDateTime startOfDay,
-			@Param("endOfDay") LocalDateTime endOfDay
+			ReservationStatus status,
+			LocalDateTime startOfDay,
+			LocalDateTime endOfDay
 	);
 
 	List<Reservation> findByStatus(ReservationStatus status);
+
+	@Query("SELECT DISTINCT YEAR(r.reservationTime) FROM Reservation r WHERE r.status = :status")
+	List<Integer> findDistinctYearsByStatus(ReservationStatus status);
 
 	long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuses);
 }

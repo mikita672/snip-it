@@ -62,13 +62,6 @@ public class ReservationService {
         this.userRepository = userRepository;
     }
 
-    public List<ReservationResponseDTO> findAllReservations() {
-        return reservationRepository.findAll()
-                .stream()
-                .map(reservationDTOMapper::toResponseDTO)
-                .toList();
-    }
-
     public ReservationResponseDTO findReservationById(Integer id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
@@ -131,8 +124,7 @@ public class ReservationService {
 
         boolean isAvailable = availableEmployees
                 .stream()
-                .anyMatch(e -> e.id()
-                        .equals(dto.employeeId()));
+                .anyMatch(e -> e.id().equals(dto.employeeId()));
 
         if (!isAvailable) {
             throw new IllegalArgumentException("The selected time slot is not available for this employee.");
