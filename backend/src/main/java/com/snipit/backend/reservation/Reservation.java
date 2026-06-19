@@ -33,8 +33,9 @@ public class Reservation {
     @Column(name = "reservation_time", nullable = false)
     private LocalDateTime reservationTime;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String status;
+    private ReservationStatus status;
 
     @Column(name = "sum_duration")
     private Integer sumDuration;

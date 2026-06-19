@@ -25,5 +25,5 @@ export function StatusBadge({ status }: Props) {
         return <Badge variant="destructive">Cancelled</Badge>
     }
 
-    return <Badge variant="outline">{status}</Badge>
+    return <Badge variant="outline">{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>
 }

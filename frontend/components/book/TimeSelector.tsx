@@ -37,14 +37,8 @@ export default function TimeSelector({ treatmentIds, onBack, onSelect }: Props) 
         const fetchDays = async () => {
             setLoadingDays(true)
             try {
-                const start = new Date()
-                const end = new Date()
-                end.setDate(end.getDate() + 30)
-
                 const params = new URLSearchParams()
                 treatmentIds.forEach(id => params.append('treatmentIds', String(id)))
-                params.set('startDate', toISODate(start))
-                params.set('endDate', toISODate(end))
 
                 const res = await fetch(`/api/availability/days?${params.toString()}`, { cache: 'no-store' })
                 if (res.status === 401) {

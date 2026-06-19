@@ -4,6 +4,7 @@ import com.snipit.backend.employee.Employee;
 import com.snipit.backend.employee.EmployeeRepository;
 import com.snipit.backend.employee.EmployeeSchedule;
 import com.snipit.backend.reservation.Reservation;
+import com.snipit.backend.reservation.ReservationStatus;
 import com.snipit.backend.reservation.ReservationRepository;
 import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.treatment.TreatmentRepository;
@@ -195,7 +196,7 @@ public class DataSeeder {
                         reservation.setUser(clientUser);
                         reservation.setEmployee(randomEmployee);
                         reservation.setReservationTime(randomTime);
-                        reservation.setStatus(random.nextInt(10) > 1 ? "Completed" : "Cancelled"); 
+                        reservation.setStatus(random.nextInt(10) > 1 ? ReservationStatus.Completed : ReservationStatus.Cancelled); 
 
                         int treatmentCount = 1 + random.nextInt(2);
                         Set<Treatment> selectedTreatments = new java.util.HashSet<>();
@@ -241,7 +242,7 @@ public class DataSeeder {
                     reservation.setUser(clientUser);
                     reservation.setEmployee(randomEmployee);
                     reservation.setReservationTime(randomTime);
-                    reservation.setStatus(random.nextBoolean() ? "Pending" : "Confirmed");
+                    reservation.setStatus(random.nextBoolean() ? ReservationStatus.Pending : ReservationStatus.Confirmed);
 
                     int treatmentCount = 1 + random.nextInt(2);
                     Set<Treatment> selectedTreatments = new java.util.HashSet<>();

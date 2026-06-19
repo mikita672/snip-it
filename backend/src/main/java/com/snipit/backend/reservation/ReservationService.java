@@ -3,6 +3,7 @@ package com.snipit.backend.reservation;
 import com.snipit.backend.employee.Employee;
 import com.snipit.backend.treatment.Treatment;
 import com.snipit.backend.reservation.dto.AdminReservationPreviewDTO;
+import com.snipit.backend.reservation.dto.ReservationDTOMapper;
 import com.snipit.backend.reservation.dto.AdminReservationsPageDTO;
 import com.snipit.backend.reservation.dto.ReservationRequestDTO;
 import com.snipit.backend.reservation.dto.ReservationResponseDTO;
@@ -20,14 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,9 +38,9 @@ public class ReservationService {
     private final int REPUTATION_COMPLETED_BONUS = 10;
     private final int REPUTATION_AUTO_CONFIRM_TRESHOLD = 80;
     private static final int MAX_ACTIVE_APPOINTMENTS = 2;
-    private static final Set<String> ACTIVE_STATUSES = Set.of("Pending", "Confirmed");
+    private static final Set<ReservationStatus> ACTIVE_STATUSES = Set.of(ReservationStatus.Pending, ReservationStatus.Confirmed);
 
-    private final ReservationMapper reservationMapper;
+    private final ReservationDTOMapper reservationDTOMapper;
     private final ReservationRepository reservationRepository;
     private final EmployeeRepository employeeRepository;
     private final TreatmentRepository treatmentRepository;
@@ -55,66 +50,57 @@ public class ReservationService {
     public ReservationService(
             EmployeeRepository employeeRepository,
             TreatmentRepository treatmentRepository,
-            ReservationMapper reservationMapper,
+            ReservationDTOMapper reservationDTOMapper,
             ReservationRepository reservationRepository,
             AvailabilityService availabilityService,
             UserRepository userRepository) {
         this.employeeRepository = employeeRepository;
         this.treatmentRepository = treatmentRepository;
-        this.reservationMapper = reservationMapper;
+        this.reservationDTOMapper = reservationDTOMapper;
         this.reservationRepository = reservationRepository;
         this.availabilityService = availabilityService;
         this.userRepository = userRepository;
     }
 
-    public List<ReservationResponseDTO> findAllReservations() {
-        return reservationRepository.findAll()
-                .stream()
-                .map(reservationMapper::toResponseDTO)
-                .toList();
-    }
-
     public ReservationResponseDTO findReservationById(Integer id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
-        return reservationMapper.toResponseDTO(reservation);
+        return reservationDTOMapper.toResponseDTO(reservation);
     }
 
-    @Transactional(readOnly = true)
     public UserReservationsPageDTO getUserReservations(User user, int page, int size, String sort, String direction,
             String search, String status) {
-        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
 
+        Sort sortObj = Sort.by(sort).ascending();
+        if (direction.equalsIgnoreCase("desc")) {
+            sortObj = Sort.by(sort).descending();
+        }
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
-        Specification<Reservation> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("user"), user));
-
-            if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("all")) {
-                predicates.add(cb.equal(root.get("status"), status));
+        ReservationStatus filterStatus = ReservationStatus.Pending;
+        if (status != null && !status.isEmpty()) {
+            if (status.equalsIgnoreCase("all")) {
+                filterStatus = null;
+            } else {
+                filterStatus = ReservationStatus.valueOf(status.substring(0, 1).toUpperCase() + status.substring(1).toLowerCase());
             }
+        }
 
-            if (search != null && !search.isEmpty()) {
-                String searchLower = "%" + search.toLowerCase() + "%";
-                Path<?> employee = root.get("employee");
-                Join<Reservation, Treatment> treatments = root.join("treatments");
-                predicates.add(cb.or(
-                        likeIgnoreCase(cb, employee.get("firstName"), searchLower),
-                        likeIgnoreCase(cb, employee.get("lastName"), searchLower),
-                        likeIgnoreCase(cb, root.get("status"), searchLower),
-                        likeIgnoreCase(cb, treatments.get("name"), searchLower)));
-                query.distinct(true);
-            }
+        String filterSearch = null;
+        if (search != null && !search.isEmpty()) {
+            filterSearch = "%" + search.toLowerCase() + "%";
+        }
 
-            return cb.and(predicates.toArray(Predicate[]::new));
-        };
-
-        Page<Reservation> reservationPage = reservationRepository.findAll(spec, pageable);
+        Page<Reservation> reservationPage;
+        if (filterStatus != null) {
+            reservationPage = reservationRepository.findByUserAndStatusWithSearch(user, filterStatus, filterSearch, pageable);
+        } else {
+            reservationPage = reservationRepository.findByUserWithSearch(user, filterSearch, pageable);
+        }
 
         List<UserReservationPreviewDTO> dtos = reservationPage.getContent()
                 .stream()
-                .map(reservationMapper::toUserReservationPreviewDTO)
+                .map(reservationDTOMapper::toUserReservationPreviewDTO)
                 .toList();
 
         return new UserReservationsPageDTO(
@@ -124,9 +110,8 @@ public class ReservationService {
                 reservationPage.getNumber());
     }
 
-    @Transactional
     public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User principal) {
-        User user = userRepository.findByIdForUpdate(principal.getId())
+        User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + principal.getId()));
 
         validateActiveAppointmentLimit(user);
@@ -139,8 +124,7 @@ public class ReservationService {
 
         boolean isAvailable = availableEmployees
                 .stream()
-                .anyMatch(e -> e.id()
-                        .equals(dto.employeeId()));
+                .anyMatch(e -> e.id().equals(dto.employeeId()));
 
         if (!isAvailable) {
             throw new IllegalArgumentException("The selected time slot is not available for this employee.");
@@ -156,58 +140,54 @@ public class ReservationService {
                 .map(Treatment::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Reservation reservation = reservationMapper.toEntity(dto);
+        Reservation reservation = reservationDTOMapper.toEntity(dto);
         reservation.setUser(user);
         reservation.setEmployee(employee);
         reservation.setTreatments(treatments);
         reservation.setSumDuration(sumDuration);
         reservation.setTotalPrice(totalPrice);
         if (user.getReputation() >= REPUTATION_AUTO_CONFIRM_TRESHOLD) {
-            reservation.setStatus("Confirmed");
+            reservation.setStatus(ReservationStatus.Confirmed);
         } else {
-            reservation.setStatus("Pending");
+            reservation.setStatus(ReservationStatus.Pending);
         }
 
-        return reservationMapper.toResponseDTO(reservationRepository.save(reservation));
+        return reservationDTOMapper.toResponseDTO(reservationRepository.save(reservation));
     }
 
-    @Transactional(readOnly = true)
     public AdminReservationsPageDTO getAllReservationsAdmin(int page, int size, String sort, String direction,
             String search, String status) {
-        Sort sortObj = direction.equalsIgnoreCase("desc") ? Sort.by(sort).descending() : Sort.by(sort).ascending();
+
+        Sort sortObj = Sort.by(sort).ascending();
+        if (direction.equalsIgnoreCase("desc")) {
+            sortObj = Sort.by(sort).descending();
+        }
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
-        Specification<Reservation> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("all")) {
-                predicates.add(cb.equal(root.get("status"), status));
+        ReservationStatus filterStatus = ReservationStatus.Pending;
+        if (status != null && !status.isEmpty()) {
+            if (status.equalsIgnoreCase("all")) {
+                filterStatus = null;
+            } else {
+                filterStatus = ReservationStatus.valueOf(status.substring(0, 1).toUpperCase() + status.substring(1).toLowerCase());
             }
+        }
 
-            if (search != null && !search.isEmpty()) {
-                String searchLower = "%" + search.toLowerCase() + "%";
-                Path<?> employee = root.get("employee");
-                Path<?> user = root.get("user");
-                Join<Reservation, Treatment> treatments = root.join("treatments");
-                predicates.add(cb.or(
-                        likeIgnoreCase(cb, employee.get("firstName"), searchLower),
-                        likeIgnoreCase(cb, employee.get("lastName"), searchLower),
-                        likeIgnoreCase(cb, user.get("firstName"), searchLower),
-                        likeIgnoreCase(cb, user.get("lastName"), searchLower),
-                        likeIgnoreCase(cb, user.get("email"), searchLower),
-                        likeIgnoreCase(cb, root.get("status"), searchLower),
-                        likeIgnoreCase(cb, treatments.get("name"), searchLower)));
-                query.distinct(true);
-            }
+        String filterSearch = null;
+        if (search != null && !search.isEmpty()) {
+            filterSearch = "%" + search.toLowerCase() + "%";
+        }
 
-            return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(Predicate[]::new));
-        };
-
-        Page<Reservation> reservationPage = reservationRepository.findAll(spec, pageable);
+        Page<Reservation> reservationPage;
+        if (filterStatus != null) {
+            reservationPage = reservationRepository.findAllByStatusWithSearch(filterStatus, filterSearch, pageable);
+        } else {
+            reservationPage = reservationRepository.findAllWithSearch(filterSearch, pageable);
+        }
 
         List<AdminReservationPreviewDTO> dtos = reservationPage.getContent()
                 .stream()
-                .map(reservationMapper::toAdminReservationPreviewDTO)
+                .map(reservationDTOMapper::toAdminReservationPreviewDTO)
                 .toList();
 
         return new AdminReservationsPageDTO(
@@ -217,7 +197,6 @@ public class ReservationService {
                 reservationPage.getNumber());
     }
 
-    @Transactional
     public ReservationResponseDTO updateReservationStatus(Integer id, String status, User user) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
@@ -226,34 +205,26 @@ public class ReservationService {
             throw new RuntimeException("Unauthorized");
         }
 
-        String oldStatus = reservation.getStatus();
-        reservation.setStatus(status);
+        ReservationStatus oldStatus = reservation.getStatus();
+        ReservationStatus newStatus = ReservationStatus.valueOf(status.substring(0, 1).toUpperCase() + status.substring(1).toLowerCase());
+        reservation.setStatus(newStatus);
         Reservation saved = reservationRepository.save(reservation);
 
-        switch (status) {
-            case "Cancelled" -> {
-                int penalty = switch (oldStatus) {
-                    case "Confirmed" -> REPUTATION_CANCELED_CONFIRMED_PENALTY;
-                    default -> REPUTATION_CANCELED_PENDING_PENALTY;
-                };
-                int reputation = Math.max(0, user.getReputation() - penalty);
-                user.setReputation(reputation);
-                userRepository.save(user);
+        if (newStatus == ReservationStatus.Cancelled) {
+            int penalty = REPUTATION_CANCELED_PENDING_PENALTY;
+            if (oldStatus == ReservationStatus.Confirmed) {
+                penalty = REPUTATION_CANCELED_CONFIRMED_PENALTY;
             }
-            case "Completed" -> {
-                int reputation = Math.min(100, user.getReputation() + REPUTATION_COMPLETED_BONUS);
-                user.setReputation(reputation);
-                userRepository.save(user);
-            }
-            default -> {
-            }
+            int reputation = Math.max(0, user.getReputation() - penalty);
+            user.setReputation(reputation);
+            userRepository.save(user);
+        } else if (newStatus == ReservationStatus.Completed) {
+            int reputation = Math.min(100, user.getReputation() + REPUTATION_COMPLETED_BONUS);
+            user.setReputation(reputation);
+            userRepository.save(user);
         }
 
-        return reservationMapper.toResponseDTO(saved);
-    }
-
-    private static Predicate likeIgnoreCase(CriteriaBuilder cb, Path<?> path, String pattern) {
-        return cb.like(cb.lower(path.as(String.class)), pattern);
+        return reservationDTOMapper.toResponseDTO(saved);
     }
 
     private void validateActiveAppointmentLimit(User user) {
@@ -265,13 +236,12 @@ public class ReservationService {
         }
     }
 
-    @Transactional
     public ReservationResponseDTO adminUpdateReservationStatus(Integer id, String status) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
 
-        reservation.setStatus(status);
+        reservation.setStatus(ReservationStatus.valueOf(status.substring(0, 1).toUpperCase() + status.substring(1).toLowerCase()));
         Reservation saved = reservationRepository.save(reservation);
-        return reservationMapper.toResponseDTO(saved);
+        return reservationDTOMapper.toResponseDTO(saved);
     }
 }
