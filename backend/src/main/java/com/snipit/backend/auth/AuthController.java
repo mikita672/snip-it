@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.snipit.backend.auth.dto.AuthenticateRequestDTO;
 import com.snipit.backend.auth.dto.RegisterRequestDTO;
 
+import java.util.Map;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +34,7 @@ public class AuthController {
                         return withAuthCookies(tokens, ResponseEntity.noContent());
                 } catch (EmailAlreadyExistsException e) {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
-                                        .body(java.util.Map.of("error", e.getMessage()));
+                                        .body(Map.of("error", e.getMessage()));
                 }
         }
 
