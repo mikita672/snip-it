@@ -5,6 +5,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 import type { Employee } from '@/types/employee/Employee'
 import type { TreatmentPreview } from '@/types/treatment/TreatmentPreview'
 import type { ScheduleEntry } from '@/types/employee/ScheduleEntry'
@@ -145,14 +146,21 @@ export default function EmployeeTable() {
         const url = isEdit ? `/api/employee/${editingEmployee.id}` : '/api/employee'
         const method = isEdit ? 'PUT' : 'POST'
 
-        const res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...form, schedule: scheduleMapToEntries(scheduleMap) }),
-        })
-        if (res.ok) {
-            await fetchEmployees()
-            closeModal()
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...form, schedule: scheduleMapToEntries(scheduleMap) }),
+            })
+            if (res.ok) {
+                await fetchEmployees()
+                closeModal()
+                toast.success(isEdit ? 'Employee updated' : 'Employee created')
+            } else {
+                toast.error(isEdit ? 'Failed to update employee' : 'Failed to create employee')
+            }
+        } catch {
+            toast.error(isEdit ? 'Failed to update employee' : 'Failed to create employee')
         }
     }
 
@@ -163,10 +171,17 @@ export default function EmployeeTable() {
         setScheduleMap((m: ScheduleMap) => ({ ...m, [day]: { ...m[day], [field]: value } }))
 
     const handleToggleActive = async (id: number) => {
-        const res = await fetch(`/api/employee/${id}/toggle-active`, { method: 'PATCH' })
-        if (res.ok) {
-            const updated: Employee = await res.json()
-            setEmployees((prev: Employee[]) => prev.map((e: Employee) => e.id === id ? updated : e))
+        try {
+            const res = await fetch(`/api/employee/${id}/toggle-active`, { method: 'PATCH' })
+            if (res.ok) {
+                const updated: Employee = await res.json()
+                setEmployees((prev: Employee[]) => prev.map((e: Employee) => e.id === id ? updated : e))
+                toast.success('Employee status updated')
+            } else {
+                toast.error('Failed to update status')
+            }
+        } catch {
+            toast.error('Failed to update status')
         }
     }
 

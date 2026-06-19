@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
     Pagination, PaginationContent, PaginationItem,
-    PaginationLink, PaginationNext, PaginationPrevious,
+    PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis
 } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { toast } from 'sonner'
 
 interface Treatment {
     id: number
@@ -77,10 +78,17 @@ export default function TreatmentTable() {
     }
 
     const handleToggleActive = async (id: number) => {
-        const res = await fetch(`/api/treatment/${id}/toggle-active`, { method: 'PATCH' })
-        if (res.ok) {
-            const updated: Treatment = await res.json()
-            setTreatments(prev => prev.map(t => t.id === id ? updated : t))
+        try {
+            const res = await fetch(`/api/treatment/${id}/toggle-active`, { method: 'PATCH' })
+            if (res.ok) {
+                const updated: Treatment = await res.json()
+                setTreatments(prev => prev.map(t => t.id === id ? updated : t))
+                toast.success('Treatment status updated')
+            } else {
+                toast.error('Failed to update status')
+            }
+        } catch {
+            toast.error('Failed to update status')
         }
     }
 
@@ -113,22 +121,46 @@ export default function TreatmentTable() {
         if (Number(editForm.price) < 0) errors.price = 'Price cannot be negative'
         if (Object.keys(errors).length > 0) { setFormErrors(errors); return }
 
-        const url = isCreating ? '/api/treatment' : `/api/treatment/${editingTreatment!.id}`
-        const method = isCreating ? 'POST' : 'PUT'
-        const res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: editForm.name,
-                description: editForm.description,
-                durationMinutes: Number(editForm.durationMinutes),
-                price: editForm.price,
-            }),
-        })
-        if (res.ok) {
-            await fetchTreatments()
-            closeModal()
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: editForm.name,
+                    description: editForm.description,
+                    durationMinutes: Number(editForm.durationMinutes),
+                    price: editForm.price,
+                }),
+            })
+            if (res.ok) {
+                await fetchTreatments()
+                closeModal()
+                toast.success(isCreating ? 'Treatment created' : 'Treatment updated')
+            } else {
+                toast.error(isCreating ? 'Failed to create treatment' : 'Failed to update treatment')
+            }
+        } catch {
+            toast.error(isCreating ? 'Failed to create treatment' : 'Failed to update treatment')
         }
+    }
+
+    const getVisiblePages = () => {
+        const total = totalPages
+        const current = page - 1
+
+        if (total <= 7) {
+            return Array.from({ length: total }, (_, i) => i + 1)
+        }
+
+        if (current <= 3) {
+            return [1, 2, 3, 4, 5, -1, total]
+        }
+
+        if (current >= total - 4) {
+            return [1, -1, total - 4, total - 3, total - 2, total - 1, total]
+        }
+
+        return [1, -1, current, current + 1, current + 2, -1, total]
     }
 
     return (
@@ -232,14 +264,19 @@ export default function TreatmentTable() {
                                 className={page === 1 ? 'pointer-events-none opacity-50' : ''}
                             />
                         </PaginationItem>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                            <PaginationItem key={p}>
-                                <PaginationLink
-                                    isActive={p === page}
-                                    onClick={e => { e.preventDefault(); setPage(p) }}
-                                >
-                                    {p}
-                                </PaginationLink>
+                        {getVisiblePages().map((p, index) => (
+                            <PaginationItem key={`${p}-${index}`}>
+                                {p === -1 ? (
+                                    <PaginationEllipsis />
+                                ) : (
+                                    <PaginationLink
+                                        isActive={p === page}
+                                        onClick={e => { e.preventDefault(); setPage(p) }}
+                                        className="cursor-pointer"
+                                    >
+                                        {p}
+                                    </PaginationLink>
+                                )}
                             </PaginationItem>
                         ))}
                         <PaginationItem>
