@@ -76,6 +76,17 @@ export default function EmployeeSelector({ treatmentIds, selectedTime, onSelect,
 
             {!loading && !error && employees.length > 0 && (
                 <div className="flex flex-col gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            const randomEmployee = employees[Math.floor(Math.random() * employees.length)]
+                            handleSelect(randomEmployee)
+                        }}
+                        className="flex flex-col items-start gap-1 rounded-xl px-4 py-3 text-left transition-colors h-auto w-full border-border bg-card hover:border-primary/50 hover:bg-primary/5"
+                    >
+                        <p className="font-semibold text-sm">Any specialist</p>
+                        <p className="text-xs text-muted-foreground">Automatically select an available specialist</p>
+                    </Button>
                     {employees.map(employee => (
                         <Button
                             key={employee.id}
