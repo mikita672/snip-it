@@ -16,12 +16,10 @@ import com.snipit.backend.reservation.dto.ReservationResponseDTO;
 import com.snipit.backend.reservation.dto.UserReservationsPageDTO;
 import com.snipit.backend.user.User;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/reservation")
-@Tag(name = "Reservation", description = "Reservation management endpoints")
 public class ReservationController {
     private final ReservationService reservationService;
 

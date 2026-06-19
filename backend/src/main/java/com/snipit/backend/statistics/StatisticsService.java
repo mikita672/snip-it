@@ -2,12 +2,12 @@ package com.snipit.backend.statistics;
 
 import com.snipit.backend.reservation.Reservation;
 import com.snipit.backend.reservation.ReservationRepository;
+import com.snipit.backend.reservation.ReservationStatus;
 import com.snipit.backend.statistics.dto.EmployeeStatsDTO;
 import com.snipit.backend.statistics.dto.GeneralStatsDTO;
 import com.snipit.backend.statistics.dto.MonthlyStatDTO;
 import com.snipit.backend.statistics.dto.TreatmentStatsDTO;
 import com.snipit.backend.treatment.Treatment;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -221,20 +221,12 @@ public class StatisticsService {
         LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(year + 1, 1, 1, 0, 0);
 
-        Specification<Reservation> spec = (root, query, cb) -> cb.and(
-                cb.equal(root.get("status"), "Completed"),
-                cb.greaterThanOrEqualTo(root.get("reservationTime"), start),
-                cb.lessThan(root.get("reservationTime"), end)
-        );
-
-        return reservationRepository.findAll(spec);
+        return reservationRepository.findByStatusAndDate(
+                ReservationStatus.Completed, start, end);
     }
 
     private List<Integer> getAvailableYears() {
-        Specification<Reservation> spec = (root, query, cb) ->
-                cb.equal(root.get("status"), "Completed");
-
-        List<Reservation> allCompleted = reservationRepository.findAll(spec);
+        List<Reservation> allCompleted = reservationRepository.findByStatus(ReservationStatus.Completed);
 
         TreeSet<Integer> years = new TreeSet<>();
         for (Reservation reservation : allCompleted) {

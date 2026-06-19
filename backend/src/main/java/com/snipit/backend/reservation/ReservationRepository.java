@@ -6,21 +6,82 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-public interface ReservationRepository
-		extends JpaRepository<Reservation, Integer>, JpaSpecificationExecutor<Reservation> {
+public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 
-	@Query("SELECT r FROM Reservation r JOIN FETCH r.employee WHERE r.employee.id IN :employeeIds AND r.reservationTime >= :startOfDay AND r.reservationTime < :endOfDay")
-	List<Reservation> findByEmployeeIdsAndDate(@Param("employeeIds") List<Integer> employeeIds,
+	@Query("SELECT r FROM Reservation r JOIN FETCH r.employee " +
+		   "WHERE r.employee.id IN :employeeIds " +
+		   "AND r.reservationTime >= :startOfDay " +
+		   "AND r.reservationTime < :endOfDay")
+	List<Reservation> findByEmployeeIdsAndDate(
+			@Param("employeeIds") List<Integer> employeeIds,
 			@Param("startOfDay") LocalDateTime startOfDay,
-			@Param("endOfDay") LocalDateTime endOfDay);
+			@Param("endOfDay") LocalDateTime endOfDay
+	);
 
-	Page<Reservation> findByUserOrderByReservationTimeDesc(User user, Pageable pageable);
+	@Query("SELECT DISTINCT r FROM Reservation r " +
+		   "LEFT JOIN r.treatments t " +
+		   "WHERE r.user = :user " +
+		   "AND r.status = :status " +
+		   "AND (:search IS NULL OR LOWER(r.employee.firstName) LIKE :search OR " +
+		   "LOWER(r.employee.lastName) LIKE :search OR LOWER(t.name) LIKE :search)")
+	Page<Reservation> findByUserAndStatusWithSearch(
+			User user,
+			ReservationStatus status,
+			String search,
+			Pageable pageable
+	);
 
-	long countByUserAndStatusIn(User user, Collection<String> statuses);
+	@Query("SELECT DISTINCT r FROM Reservation r " +
+		   "LEFT JOIN r.treatments t " +
+		   "WHERE r.user = :user " +
+		   "AND (:search IS NULL OR LOWER(r.employee.firstName) LIKE :search OR " +
+		   "LOWER(r.employee.lastName) LIKE :search OR LOWER(t.name) LIKE :search)")
+	Page<Reservation> findByUserWithSearch(
+			User user,
+			String search,
+			Pageable pageable
+	);
+
+	@Query("SELECT DISTINCT r FROM Reservation r " +
+		   "LEFT JOIN r.treatments t " +
+		   "WHERE r.status = :status " +
+		   "AND (:search IS NULL OR LOWER(r.employee.firstName) LIKE :search OR " +
+		   "LOWER(r.employee.lastName) LIKE :search OR LOWER(r.user.firstName) LIKE :search OR " +
+		   "LOWER(r.user.lastName) LIKE :search OR LOWER(r.user.email) LIKE :search OR " +
+		   "LOWER(t.name) LIKE :search)")
+	Page<Reservation> findAllByStatusWithSearch(
+			ReservationStatus status,
+			String search,
+			Pageable pageable
+	);
+
+	@Query("SELECT DISTINCT r FROM Reservation r " +
+		   "LEFT JOIN r.treatments t " +
+		   "WHERE (:search IS NULL OR LOWER(r.employee.firstName) LIKE :search OR " +
+		   "LOWER(r.employee.lastName) LIKE :search OR LOWER(r.user.firstName) LIKE :search OR " +
+		   "LOWER(r.user.lastName) LIKE :search OR LOWER(r.user.email) LIKE :search OR " +
+		   "LOWER(t.name) LIKE :search)")
+	Page<Reservation> findAllWithSearch(
+			String search,
+			Pageable pageable
+	);
+
+	@Query("SELECT r FROM Reservation r " +
+		   "WHERE r.status = :status " +
+		   "AND r.reservationTime >= :startOfDay " +
+		   "AND r.reservationTime < :endOfDay")
+	List<Reservation> findByStatusAndDate(
+			@Param("status") ReservationStatus status,
+			@Param("startOfDay") LocalDateTime startOfDay,
+			@Param("endOfDay") LocalDateTime endOfDay
+	);
+
+	List<Reservation> findByStatus(ReservationStatus status);
+
+	long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuses);
 }

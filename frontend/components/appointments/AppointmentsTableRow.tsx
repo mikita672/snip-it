@@ -23,13 +23,14 @@ export function AppointmentsTableRow({ res, loadingId, handleCancel }: Props) {
         if (s.includes('pending')) {
             return <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300">Pending</Badge>;
         }
+        const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
         if (s.includes('confirm') || s.includes('complet')) {
-            return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300">{status}</Badge>;
+            return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300">{displayStatus}</Badge>;
         }
         if (s.includes('cancel')) {
-            return <Badge variant="destructive">{status}</Badge>;
+            return <Badge variant="destructive">{displayStatus}</Badge>;
         }
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{displayStatus}</Badge>;
     };
 
     return (
